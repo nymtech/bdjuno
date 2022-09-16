@@ -2,11 +2,11 @@ package types
 
 import (
 	"fmt"
+	wasmapp "github.com/CosmWasm/wasmd/app"
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"os"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	cmdxapp "github.com/comdex-official/comdex/app"
-
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -76,32 +76,39 @@ func buildLocalSources(cfg *local.Details, encodingConfig *params.EncodingConfig
 		return nil, err
 	}
 
-	cmdxApp := cmdxapp.New(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, map[int64]bool{},
-		cfg.Home, 0, cmdxapp.MakeEncodingConfig(), simapp.EmptyAppOptions{}, nil,
+	app := simapp.NewSimApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, map[int64]bool{},
+		cfg.Home, 0, simapp.MakeTestEncodingConfig(), simapp.EmptyAppOptions{},
+	)
+
+	wasmApp := wasmapp.NewWasmApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, map[int64]bool{},
+		cfg.Home, 0, wasmapp.MakeEncodingConfig(), wasm.EnableAllProposals, simapp.EmptyAppOptions{},
+		nil,
 	)
 
 	sources := &Sources{
-		BankSource:     localbanksource.NewSource(source, banktypes.QueryServer(cmdxApp.BankKeeper)),
-		DistrSource:    localdistrsource.NewSource(source, distrtypes.QueryServer(cmdxApp.DistrKeeper)),
-		GovSource:      localgovsource.NewSource(source, govtypes.QueryServer(cmdxApp.GovKeeper)),
-		MintSource:     localmintsource.NewSource(source, minttypes.QueryServer(cmdxApp.MintKeeper)),
-		SlashingSource: localslashingsource.NewSource(source, slashingtypes.QueryServer(cmdxApp.SlashingKeeper)),
-		StakingSource:  localstakingsource.NewSource(source, stakingkeeper.Querier{Keeper: cmdxApp.StakingKeeper}),
-		WasmSource:     localwasmsource.NewSource(source, wasmkeeper.Querier(&cmdxApp.WasmKeeper)),
+		BankSource:     localbanksource.NewSource(source, banktypes.QueryServer(app.BankKeeper)),
+		DistrSource:    localdistrsource.NewSource(source, distrtypes.QueryServer(app.DistrKeeper)),
+		GovSource:      localgovsource.NewSource(source, govtypes.QueryServer(app.GovKeeper)),
+		MintSource:     localmintsource.NewSource(source, minttypes.QueryServer(app.MintKeeper)),
+		SlashingSource: localslashingsource.NewSource(source, slashingtypes.QueryServer(app.SlashingKeeper)),
+		StakingSource:  localstakingsource.NewSource(source, stakingkeeper.Querier{Keeper: app.StakingKeeper}),
+		WasmSource:     localwasmsource.NewSource(source, wasmkeeper.Querier(&wasmApp.WasmKeeper)),
 	}
 
 	// Mount and initialize the stores
-	err = source.MountKVStores(cmdxApp, "keys")
+	err = source.MountKVStores(app, "keys")
 	if err != nil {
 		return nil, err
 	}
 
-	err = source.MountTransientStores(cmdxApp, "tkeys")
+	err = source.MountTransientStores(app, "tkeys")
 	if err != nil {
 		return nil, err
 	}
 
-	err = source.MountMemoryStores(cmdxApp, "memKeys")
+	err = source.MountMemoryStores(app, "memKeys")
 	if err != nil {
 		return nil, err
 	}

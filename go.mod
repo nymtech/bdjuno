@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/CosmWasm/wasmd v0.22.0
-	github.com/comdex-official/comdex v0.1.1
 	github.com/cosmos/cosmos-sdk v0.45.3
 	github.com/cosmos/gaia/v6 v6.0.4
 	github.com/forbole/juno/v3 v3.3.1-0.20220803134534-55af63c839ac
@@ -137,7 +136,7 @@ require (
 )
 
 replace (
-	github.com/comdex-official/comdex => github.com/huichiaotsou/comdex v0.1.1-exportkeepers-a
+	github.com/CosmWasm/wasmd => github.com/mmsinclair/wasmd v0.22.0
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/forbole/tendermint v0.34.13-0.20210820072129-a2a4af55563d
