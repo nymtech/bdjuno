@@ -6,6 +6,7 @@ import (
 	dbtypes "github.com/forbole/bdjuno/v3/database/types"
 	dbutils "github.com/forbole/bdjuno/v3/database/utils"
 	"github.com/forbole/bdjuno/v3/types"
+	juno "github.com/forbole/juno/v3/types"
 	"github.com/lib/pq"
 )
 
@@ -141,6 +142,13 @@ VALUES `
 	return nil
 }
 
+// GetWasmContractExists returns all the wasm contracts matching an address that are currently stored inside the database.
+func (db *Db) GetWasmContractExists(contractAddress string) (bool, error) {
+	var count int
+	err := db.Sqlx.Select(&count, `SELECT count(contract_address) FROM wasm_contract WHERE contract_address = '`+contractAddress+`'`)
+	return count > 0, err
+}
+
 // SaveWasmExecuteContract allows to store the wasm contract
 func (db *Db) SaveWasmExecuteContract(wasmExecuteContract types.WasmExecuteContract) error {
 	return db.SaveWasmExecuteContracts([]types.WasmExecuteContract{wasmExecuteContract})
@@ -148,7 +156,7 @@ func (db *Db) SaveWasmExecuteContract(wasmExecuteContract types.WasmExecuteContr
 
 // SaveWasmContracts allows to store the wasm contract slice
 func (db *Db) SaveWasmExecuteContracts(executeContracts []types.WasmExecuteContract) error {
-	paramsNumber := 7
+	paramsNumber := 8
 	slices := dbutils.SplitWasmExecuteContracts(executeContracts, paramsNumber)
 
 	for _, contracts := range slices {
@@ -168,17 +176,17 @@ func (db *Db) SaveWasmExecuteContracts(executeContracts []types.WasmExecuteContr
 func (db *Db) saveWasmExecuteContracts(paramNumber int, executeContracts []types.WasmExecuteContract) error {
 	stmt := `
 INSERT INTO wasm_execute_contract 
-(sender, contract_address, raw_contract_message, funds, data, executed_at, height) 
+(sender, contract_address, raw_contract_message, funds, data, executed_at, height, hash, message_type) 
 VALUES `
 
 	var args []interface{}
 	for i, executeContract := range executeContracts {
 		ii := i * paramNumber
-		stmt += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d),",
-			ii+1, ii+2, ii+3, ii+4, ii+5, ii+6, ii+7)
+		stmt += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d),",
+			ii+1, ii+2, ii+3, ii+4, ii+5, ii+6, ii+7, ii+8, ii+9)
 		args = append(args,
 			executeContract.Sender, executeContract.ContractAddress, string(executeContract.RawContractMsg),
-			pq.Array(dbtypes.NewDbCoins(executeContract.Funds)), executeContract.Data, executeContract.ExecutedAt, executeContract.Height)
+			pq.Array(dbtypes.NewDbCoins(executeContract.Funds)), executeContract.Data, executeContract.ExecutedAt, executeContract.Height, executeContract.Hash, executeContract.MessageType)
 	}
 
 	stmt = stmt[:len(stmt)-1] // Remove trailing ","
@@ -188,6 +196,35 @@ VALUES `
 	_, err := db.Sql.Exec(stmt, args...)
 	if err != nil {
 		return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+	}
+
+	return nil
+}
+
+// SaveWasmExecuteContractEvents allows to store the wasm contract events
+func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Tx) error {
+	stmt := `
+INSERT INTO wasm_execute_contract_event_types 
+(contract_address,
+event_type,
+first_seen_height,
+first_seen_hash,
+last_seen_height,
+last_seen_hash) 
+VALUES ($1, $2, $3, $4, $3, $4)
+ON CONFLICT (contract_address, event_type) DO UPDATE
+SET (last_seen_height, last_seen_hash) = (EXCLUDED.last_seen_height, EXCLUDED.last_seen_hash);
+`
+
+	for _, txLog := range tx.Logs {
+		for _, event := range txLog.Events {
+
+			_, err := db.Sql.Exec(stmt, executeContract.ContractAddress, event.Type,
+				executeContract.Height, tx.TxHash)
+			if err != nil {
+				return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+			}
+		}
 	}
 
 	return nil

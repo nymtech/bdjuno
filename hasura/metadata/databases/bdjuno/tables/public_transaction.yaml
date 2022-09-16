@@ -2,25 +2,36 @@ table:
   name: transaction
   schema: public
 object_relationships:
-- name: block
-  using:
-    foreign_key_constraint_on: height
+  - name: block
+    using:
+      foreign_key_constraint_on: height
+array_relationships:
+  - name: messagesByTransactionHashPartitionId
+    using:
+      manual_configuration:
+        column_mapping:
+          hash: transaction_hash
+          partition_id: partition_id
+        insertion_order: null
+        remote_table:
+          name: message
+          schema: public
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - hash
-    - height
-    - success
-    - messages
-    - memo
-    - signatures
-    - signer_infos
-    - fee
-    - gas_wanted
-    - gas_used
-    - raw_log
-    - logs
-    - partition_id
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - hash
+        - height
+        - success
+        - messages
+        - memo
+        - signatures
+        - signer_infos
+        - fee
+        - gas_wanted
+        - gas_used
+        - raw_log
+        - logs
+        - partition_id
+      filter: {}
+      allow_aggregations: true

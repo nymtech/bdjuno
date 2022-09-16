@@ -31,3 +31,11 @@ This will:
 2. Run all the tests using that database as support.
 
 
+## Setup
+
+Remember to run this if you have an empty database:
+
+```
+cd hasura
+hasura metadata apply --endpoint http://localhost:8080 --admin-secret myadminsecretkey
+```

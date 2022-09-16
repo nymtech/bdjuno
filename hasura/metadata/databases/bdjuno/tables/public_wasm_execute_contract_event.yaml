@@ -1,0 +1,19 @@
+table:
+  schema: public
+  name: wasm_execute_contract_event
+object_relationships:
+  - name: block
+    using:
+      foreign_key_constraint_on: height
+  - name: transaction
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: transaction
+        insertion_order: null
+        column_mapping:
+          hash: hash
+  - name: wasm_contract
+    using:
+      foreign_key_constraint_on: contract_address

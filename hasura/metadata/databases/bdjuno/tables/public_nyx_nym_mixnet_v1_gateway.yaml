@@ -1,0 +1,11 @@
+table:
+  name: nyx_nym_mixnet_v1_gateway
+  schema: public
+array_relationships:
+  - name: nyx_nym_mixnet_v1_gateway_events
+    using:
+      foreign_key_constraint_on:
+        column: identity_key
+        table:
+          name: nyx_nym_mixnet_v1_gateway_events
+          schema: public

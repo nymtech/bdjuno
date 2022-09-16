@@ -2,25 +2,35 @@ table:
   name: message
   schema: public
 object_relationships:
-- name: transaction
-  using:
-    manual_configuration:
-      remote_table:
-        schema: public
-        name: transaction
-      insertion_order:
-      column_mapping:
-        transaction_hash: hash
+  - name: transaction
+    using:
+      manual_configuration:
+        column_mapping:
+          transaction_hash: hash
+        insertion_order: null
+        remote_table:
+          name: transaction
+          schema: public
+  - name: transactionByPartitionIdTransactionHash
+    using:
+      manual_configuration:
+        column_mapping:
+          partition_id: partition_id
+          transaction_hash: hash
+        insertion_order: null
+        remote_table:
+          name: transaction
+          schema: public
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - transaction_hash
-    - index
-    - type
-    - value
-    - involved_accounts_addresses
-    - partition_id
-    - height
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - transaction_hash
+        - index
+        - type
+        - value
+        - involved_accounts_addresses
+        - partition_id
+        - height
+      filter: {}
+      allow_aggregations: true

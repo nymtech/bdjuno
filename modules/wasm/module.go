@@ -10,8 +10,10 @@ import (
 )
 
 var (
-	_ modules.Module        = &Module{}
-	_ modules.MessageModule = &Module{}
+	_ modules.Module            = &Module{}
+	_ modules.MessageModule     = &Module{}
+	_ modules.TransactionModule = &Module{}
+	_ modules.BlockModule       = &Module{}
 )
 
 // Module represent x/wasm module

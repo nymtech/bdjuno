@@ -2,9 +2,9 @@ table:
   name: modules
   schema: public
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - module_name
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - module_name
+      filter: {}
+      allow_aggregations: true

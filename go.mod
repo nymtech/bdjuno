@@ -4,14 +4,15 @@ go 1.17
 
 require (
 	github.com/CosmWasm/wasmd v0.22.0
-	github.com/comdex-official/comdex v0.1.1
 	github.com/cosmos/cosmos-sdk v0.45.3
 	github.com/cosmos/gaia/v6 v6.0.4
 	github.com/forbole/juno/v3 v3.3.1-0.20220803134534-55af63c839ac
 	github.com/go-co-op/gocron v1.16.1
 	github.com/gogo/protobuf v1.3.3
+	github.com/invopop/jsonschema v0.7.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.6
+	github.com/ohler55/ojg v1.14.5
 	github.com/pelletier/go-toml v1.9.5
 	github.com/prometheus/client_golang v1.12.2
 	github.com/proullon/ramsql v0.0.0-20181213202341-817cee58a244
@@ -81,6 +82,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87 // indirect
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/improbable-eng/grpc-web v0.14.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
@@ -137,7 +139,7 @@ require (
 )
 
 replace (
-	github.com/comdex-official/comdex => github.com/huichiaotsou/comdex v0.1.1-exportkeepers-a
+	github.com/CosmWasm/wasmd => github.com/mmsinclair/wasmd v0.22.1
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/forbole/tendermint v0.34.13-0.20210820072129-a2a4af55563d

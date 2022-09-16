@@ -1,1 +1,9 @@
-[]
+- comment: Gets message for a date range
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: messages
+  methods:
+    - POST
+  name: messages
+  url: messages

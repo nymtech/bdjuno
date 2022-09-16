@@ -1,0 +1,13 @@
+table:
+  name: wasm_execute_contract_event_types
+  schema: public
+object_relationships:
+  - name: block
+    using:
+      foreign_key_constraint_on: first_seen_height
+  - name: blockByLastSeenHeight
+    using:
+      foreign_key_constraint_on: last_seen_height
+  - name: wasm_contract
+    using:
+      foreign_key_constraint_on: contract_address

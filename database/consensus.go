@@ -55,6 +55,44 @@ func (db *Db) getBlockHeightTime(pastTime time.Time) (dbtypes.BlockRow, error) {
 	return val[0], nil
 }
 
+// GetFirstBlockTime retrieves the first block stored
+func (db *Db) GetFirstBlockTime() (dbtypes.BlockRow, error) {
+	stmt := `SELECT * FROM block ORDER BY block.timestamp ASC LIMIT 1;`
+
+	var val []dbtypes.BlockRow
+	if err := db.Sqlx.Select(&val, stmt); err != nil {
+		return dbtypes.BlockRow{}, err
+	}
+
+	if len(val) == 0 {
+		return dbtypes.BlockRow{}, fmt.Errorf("cannot get block time, no blocks saved")
+	}
+
+	return val[0], nil
+}
+
+// GetLastBlockTime retrieves the first block stored
+func (db *Db) GetLastBlockTime() (dbtypes.BlockRow, error) {
+	stmt := `SELECT * FROM block ORDER BY block.timestamp DESC LIMIT 1;`
+
+	var val []dbtypes.BlockRow
+	if err := db.Sqlx.Select(&val, stmt); err != nil {
+		return dbtypes.BlockRow{}, err
+	}
+
+	if len(val) == 0 {
+		return dbtypes.BlockRow{}, fmt.Errorf("cannot get block time, no blocks saved")
+	}
+
+	return val[0], nil
+}
+
+// GetBlockHeightTime return block height and time that a block proposals
+// at the input date
+func (db *Db) GetBlockHeightTime(now time.Time) (dbtypes.BlockRow, error) {
+	return db.getBlockHeightTime(now)
+}
+
 // GetBlockHeightTimeMinuteAgo return block height and time that a block proposals
 // about a minute ago from input date
 func (db *Db) GetBlockHeightTimeMinuteAgo(now time.Time) (dbtypes.BlockRow, error) {

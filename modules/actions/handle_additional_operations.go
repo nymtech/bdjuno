@@ -6,6 +6,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/forbole/bdjuno/v3/modules/actions/handlers"
 	actionstypes "github.com/forbole/bdjuno/v3/modules/actions/types"
 )
@@ -15,8 +17,10 @@ var (
 )
 
 func (m *Module) RunAdditionalOperations() error {
+	log.Info().Msg("Starting actions worker...")
+
 	// Build the worker
-	context := actionstypes.NewContext(m.node, m.sources)
+	context := actionstypes.NewContext(m.node, m.sources, m.db)
 	worker := actionstypes.NewActionsWorker(context)
 
 	// Register the endpoints
@@ -40,6 +44,13 @@ func (m *Module) RunAdditionalOperations() error {
 	worker.RegisterHandler("/validator_delegations", handlers.ValidatorDelegation)
 	worker.RegisterHandler("/validator_redelegations_from", handlers.ValidatorRedelegationsFromHandler)
 	worker.RegisterHandler("/validator_unbonding_delegations", handlers.ValidatorUnbondingDelegationsHandler)
+
+	// -- Messages --
+	worker.RegisterHandler("/messages", handlers.MessagesHandler)
+	worker.RegisterHandler("/messages/count", handlers.MessagesCountHandler)
+
+	// -- Nyx --
+	worker.RegisterHandler("/nyx/external", handlers.ExternalRequestHandler)
 
 	// Listen for and trap any OS signal to gracefully shutdown and exit
 	m.trapSignal()

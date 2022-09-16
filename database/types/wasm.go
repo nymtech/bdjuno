@@ -153,7 +153,7 @@ func (a WasmContractRow) Equals(b WasmContractRow) bool {
 		a.CodeID == b.CodeID &&
 		a.Label == b.Label &&
 		a.RawContractMessage == b.RawContractMessage &&
-		a.Funds.Equal(a.Funds) &&
+		a.Funds.Equal(b.Funds) &&
 		a.ContractAddress == b.ContractAddress &&
 		a.Data == b.Data &&
 		a.InstantiatedAt == b.InstantiatedAt &&
@@ -172,6 +172,7 @@ type WasmExecuteContractRow struct {
 	Data               string    `db:"data"`
 	ExecutedAt         time.Time `db:"executed_at"`
 	Height             int64     `db:"height"`
+	Hash               string    `db:"hash"`
 }
 
 // NewWasmExecuteContractRow allows to easily create a new WasmExecuteContractRow
@@ -183,6 +184,7 @@ func NewWasmExecuteContractRow(
 	data string,
 	executedAt time.Time,
 	height int64,
+	hash string,
 ) WasmExecuteContractRow {
 	return WasmExecuteContractRow{
 		Sender:             sender,
@@ -192,6 +194,7 @@ func NewWasmExecuteContractRow(
 		Data:               data,
 		ExecutedAt:         executedAt,
 		Height:             height,
+		Hash:               hash,
 	}
 }
 
@@ -200,8 +203,54 @@ func (a WasmExecuteContractRow) Equals(b WasmExecuteContractRow) bool {
 	return a.Sender == b.Sender &&
 		a.ContractAddress == b.ContractAddress &&
 		a.RawContractMessage == b.RawContractMessage &&
-		a.Funds.Equal(a.Funds) &&
+		a.Funds.Equal(b.Funds) &&
 		a.Data == b.Data &&
 		a.ExecutedAt == b.ExecutedAt &&
-		a.Height == b.Height
+		a.Height == b.Height &&
+		a.Hash == b.Hash
+}
+
+// ===================== Execute Contract Event =====================
+
+// WasmExecuteContractRow represents a single row inside the "wasm_execute_contract" table
+type WasmExecuteContractEventRow struct {
+	Sender          string    `db:"sender"`
+	ContractAddress string    `db:"contract_address"`
+	EventType       string    `db:"event_type"`
+	Attributes      string    `db:"attributes"`
+	ExecutedAt      time.Time `db:"executed_at"`
+	Height          int64     `db:"height"`
+	Hash            string    `db:"hash"`
+}
+
+// NewWasmExecuteContractEventRow allows to easily create a new WasmExecuteContractEventRow
+func NewWasmExecuteContractEventRow(
+	sender string,
+	contractAddress string,
+	eventType string,
+	attributes string,
+	executedAt time.Time,
+	height int64,
+	hash string,
+) WasmExecuteContractEventRow {
+	return WasmExecuteContractEventRow{
+		Sender:          sender,
+		ContractAddress: contractAddress,
+		EventType:       eventType,
+		Attributes:      attributes,
+		ExecutedAt:      executedAt,
+		Height:          height,
+		Hash:            hash,
+	}
+}
+
+// Equals return true if one WasmExecuteContractEventRow representing the same row as the original one
+func (a WasmExecuteContractEventRow) Equals(b WasmExecuteContractEventRow) bool {
+	return a.Sender == b.Sender &&
+		a.ContractAddress == b.ContractAddress &&
+		a.EventType == b.EventType &&
+		a.Attributes == b.Attributes &&
+		a.ExecutedAt == b.ExecutedAt &&
+		a.Height == b.Height &&
+		a.Hash == b.Hash
 }

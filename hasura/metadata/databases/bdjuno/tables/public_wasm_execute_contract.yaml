@@ -2,19 +2,37 @@ table:
   name: wasm_execute_contract
   schema: public
 object_relationships:
-- name: wasm_contract
-  using:
-    foreign_key_constraint_on: contract_address
+  - name: block
+    using:
+      manual_configuration:
+        column_mapping:
+          height: height
+        insertion_order: null
+        remote_table:
+          name: block
+          schema: public
+  - name: transaction
+    using:
+      manual_configuration:
+        column_mapping:
+          hash: hash
+        insertion_order: null
+        remote_table:
+          name: transaction
+          schema: public
+  - name: wasm_contract
+    using:
+      foreign_key_constraint_on: contract_address
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - sender
-    - contract_address
-    - raw_contract_message
-    - funds
-    - data
-    - executed_at
-    - height
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - sender
+        - contract_address
+        - raw_contract_message
+        - funds
+        - data
+        - executed_at
+        - height
+      filter: {}
+      allow_aggregations: true

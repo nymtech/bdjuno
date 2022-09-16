@@ -41,6 +41,8 @@ CREATE TABLE wasm_contract
     height                  BIGINT          NOT NULL
 );
 CREATE INDEX wasm_contract_height_index ON wasm_contract (height);
+CREATE INDEX wasm_contract_creator_index ON wasm_contract (creator);
+CREATE INDEX wasm_contract_label_index ON wasm_contract (label);
 
 CREATE TABLE wasm_execute_contract
 (
@@ -48,9 +50,13 @@ CREATE TABLE wasm_execute_contract
     contract_address        TEXT            NOT NULL REFERENCES wasm_contract (contract_address),
     raw_contract_message    JSONB           NOT NULL DEFAULT '{}'::JSONB,
     funds                   COIN[]          NOT NULL DEFAULT '{}',
+    message_type            TEXT            NULL,
     data                    TEXT            NULL,
     executed_at             TIMESTAMP       NOT NULL,
-    height                  BIGINT          NOT NULL
+    height                  BIGINT          NOT NULL,
+    hash                    TEXT            NOT NULL
 );
 CREATE INDEX execute_contract_height_index ON wasm_execute_contract (height);
+CREATE INDEX execute_contract_executed_at_index ON wasm_execute_contract (executed_at);
+CREATE INDEX execute_contract_message_type_index ON wasm_execute_contract (message_type);
  

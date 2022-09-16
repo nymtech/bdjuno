@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/forbole/bdjuno/v3/modules/external"
 	initcmd "github.com/forbole/juno/v3/cmd/init"
 	junoconfig "github.com/forbole/juno/v3/types/config"
 	"github.com/spf13/cobra"
@@ -11,15 +12,17 @@ import (
 
 // Config represents the BDJuno configuration
 type Config struct {
-	JunoConfig    junoconfig.Config `yaml:"-,inline"`
-	ActionsConfig actions.Config    `yaml:"actions"`
+	JunoConfig     junoconfig.Config `yaml:"-,inline"`
+	ActionsConfig  actions.Config    `yaml:"actions"`
+	ExternalConfig external.Config   `yaml:"external"`
 }
 
 // NewConfig returns a new Config instance
-func NewConfig(junoCfg junoconfig.Config, actionsCfg actions.Config) Config {
+func NewConfig(junoCfg junoconfig.Config, actionsCfg actions.Config, externalCfg external.Config) Config {
 	return Config{
-		JunoConfig:    junoCfg,
-		ActionsConfig: actionsCfg,
+		JunoConfig:     junoCfg,
+		ActionsConfig:  actionsCfg,
+		ExternalConfig: externalCfg,
 	}
 }
 
@@ -30,5 +33,5 @@ func (c Config) GetBytes() ([]byte, error) {
 
 // Creator represents a configuration creator
 func Creator(_ *cobra.Command) initcmd.WritableConfig {
-	return NewConfig(junoconfig.DefaultConfig(), actions.DefaultConfig())
+	return NewConfig(junoconfig.DefaultConfig(), actions.DefaultConfig(), external.DefaultConfig())
 }

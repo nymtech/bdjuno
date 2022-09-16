@@ -1,0 +1,19 @@
+table:
+  name: nyx_nym_mixnet_v1_mixnode_events
+  schema: public
+object_relationships:
+  - name: block
+    using:
+      foreign_key_constraint_on: height
+  - name: nyx_nym_mixnet_v1_mixnode
+    using:
+      foreign_key_constraint_on: identity_key
+  - name: transaction
+    using:
+      manual_configuration:
+        column_mapping:
+          hash: hash
+        insertion_order: null
+        remote_table:
+          name: transaction
+          schema: public

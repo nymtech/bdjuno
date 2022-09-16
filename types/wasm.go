@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"strings"
 	"time"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -132,14 +133,45 @@ type WasmExecuteContract struct {
 	Data            string
 	ExecutedAt      time.Time
 	Height          int64
+	Hash            string
+	MessageType     string
+}
+
+// GetWasmExecuteContractMessageType gets the name of the contract execution message type. It will create a comma
+// separated string if there are multiple keys in the root of the message type. If message is empty, or an array, or
+// a single value, the return value will be an empty string.
+func GetWasmExecuteContractMessageType(rawContractMsg []byte) string {
+	// the default return is an empty string
+	messageType := ""
+
+	if rawContractMsg != nil {
+		var msg map[string]interface{}
+		_ = json.Unmarshal(rawContractMsg, &msg)
+
+		if len(msg) > 0 {
+
+			// get the keys in the root of the message
+			keys := make([]string, 0, len(msg))
+			for k := range msg {
+				keys = append(keys, k)
+			}
+
+			// create string of key names, so `{ a: 1 }` will be "a", and `{ b: 2, c: { ... } }` will be "b,c"
+			messageType = strings.Join(keys, ",")
+		}
+	}
+
+	return messageType
 }
 
 // NewWasmExecuteContract allows to build a new x/wasm execute contract instance
 func NewWasmExecuteContract(
 	sender string, contractAddress string, rawMsg wasmtypes.RawContractMessage,
-	funds sdk.Coins, data string, executedAt time.Time, height int64,
+	funds sdk.Coins, data string, executedAt time.Time, height int64, hash string,
 ) WasmExecuteContract {
 	rawContractMsg, _ := rawMsg.MarshalJSON()
+
+	messageType := GetWasmExecuteContractMessageType(rawMsg)
 
 	return WasmExecuteContract{
 		Sender:          sender,
@@ -149,5 +181,7 @@ func NewWasmExecuteContract(
 		Data:            data,
 		ExecutedAt:      executedAt,
 		Height:          height,
+		Hash:            hash,
+		MessageType:     messageType,
 	}
 }
