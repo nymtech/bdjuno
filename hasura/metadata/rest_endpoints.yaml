@@ -1,1 +1,18 @@
-[]
+- definition:
+    query:
+      collection_name: allowed-queries
+      query_name: SearchNymMixnetV1MixnodeRewards
+  url: nym/mixnet/v1/mixnodes/rewards
+  methods:
+    - POST
+  name: SearchNymMixnetV1MixnodeRewards
+  comment: Paged search for mixnode rewards
+- definition:
+    query:
+      collection_name: allowed-queries
+      query_name: GetNymMixnetV1MixnodeRewards
+  url: nym/mixnet/v1/mixnodes/rewards/:identity_key
+  methods:
+    - GET
+  name: GetNymMixnetV1MixnodeRewards
+  comment: Gets rewards per mixnode

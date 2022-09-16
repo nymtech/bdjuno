@@ -50,7 +50,8 @@ CREATE TABLE wasm_execute_contract
     funds                   COIN[]          NOT NULL DEFAULT '{}',
     data                    TEXT            NULL,
     executed_at             TIMESTAMP       NOT NULL,
-    height                  BIGINT          NOT NULL
+    height                  BIGINT          NOT NULL,
+    hash                    TEXT            NOT NULL
 );
 CREATE INDEX execute_contract_height_index ON wasm_execute_contract (height);
  

@@ -1,1 +1,38 @@
-[]
+- name: allowed-queries
+  definition:
+    queries:
+      - name: GetNymMixnetV1MixnodeRewards
+        query: |
+          query GetNymMixnetV1MixnodeRewards ($identity_key: String) {
+            nyx_nym_mixnet_v1_mixnode_reward(where: {identity_key:{_eq:$identity_key}}) {
+              identity_key
+              executed_at
+              hash
+              height
+              executed_at
+              operator_reward
+              total_node_reward
+              total_delegations
+              unit_delegator_reward
+            }
+          }
+      - name: SearchNymMixnetV1MixnodeRewards
+        query: |
+          query GetNymMixnetV1MixnodeRewards ($offset: Int!, $limit: Int!, $where: nyx_nym_mixnet_v1_mixnode_reward_bool_exp!) {
+            nyx_nym_mixnet_v1_mixnode_reward_aggregate(where: $where) {
+              aggregate {
+                totalCount: count
+              }
+            }
+            nyx_nym_mixnet_v1_mixnode_reward(where: $where, limit: $limit, offset: $offset) {
+              identity_key
+              executed_at
+              hash
+              height
+              executed_at
+              operator_reward
+              total_node_reward
+              total_delegations
+              unit_delegator_reward
+            }
+          }

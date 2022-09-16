@@ -1,63 +1,119 @@
 table:
-  name: block
   schema: public
+  name: block
 object_relationships:
-- name: validator
-  using:
-    foreign_key_constraint_on: proposer_address
+  - name: validator
+    using:
+      foreign_key_constraint_on: proposer_address
 array_relationships:
-- name: pre_commits
-  using:
-    manual_configuration:
-      column_mapping:
-        height: height
-      insertion_order: null
-      remote_table:
-        name: pre_commit
-        schema: public
-- name: transactions
-  using:
-    foreign_key_constraint_on:
-      column: height
-      table:
-        name: transaction
-        schema: public
-- name: validator_voting_powers
-  using:
-    manual_configuration:
-      column_mapping:
-        height: height
-      insertion_order: null
-      remote_table:
-        name: validator_voting_power
-        schema: public
-- name: proposal_deposits
-  using:
-    manual_configuration:
-      column_mapping:
-        height: height
-      insertion_order: null
-      remote_table:
-        name: proposal_deposit
-        schema: public
-- name: proposal_votes
-  using:
-    manual_configuration:
-      column_mapping:
-        height: height
-      insertion_order: null
-      remote_table:
-        name: proposal_vote
-        schema: public
+  - name: nyx_nym_mixnet_v1_gateway_events
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_gateway_events
+  - name: nyx_nym_mixnet_v1_mixnode_events
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_events
+  - name: nyx_nym_mixnet_v1_mixnode_rewards
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_reward
+  - name: nyx_nym_mixnet_v1_mixnode_statuses
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_status
+  - name: nyx_nym_mixnet_v2_events
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v2_events
+  - name: nyx_nym_mixnet_v2_mixnode_rewards
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v2_mixnode_reward
+  - name: nyx_nym_mixnet_v2_mixnode_statuses
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v2_mixnode_status
+  - name: pre_commits
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pre_commit
+        insertion_order: null
+        column_mapping:
+          height: height
+  - name: proposal_deposits
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: proposal_deposit
+        insertion_order: null
+        column_mapping:
+          height: height
+  - name: proposal_votes
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: proposal_vote
+        insertion_order: null
+        column_mapping:
+          height: height
+  - name: transactions
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: transaction
+  - name: validator_voting_powers
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: validator_voting_power
+        insertion_order: null
+        column_mapping:
+          height: height
+  - name: wasm_execute_contract_events
+    using:
+      foreign_key_constraint_on:
+        column: height
+        table:
+          schema: public
+          name: wasm_execute_contract_event
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - num_txs
-    - height
-    - total_gas
-    - hash
-    - proposer_address
-    - timestamp
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - num_txs
+        - height
+        - total_gas
+        - hash
+        - proposer_address
+        - timestamp
+      filter: {}
+      allow_aggregations: true

@@ -1,22 +1,22 @@
 table:
-  name: wasm_code
   schema: public
+  name: wasm_code
 array_relationships:
-- name: wasm_contracts
-  using:
-    foreign_key_constraint_on:
-      column: code_id
-      table:
-        name: wasm_contract
-        schema: public
+  - name: wasm_contracts
+    using:
+      foreign_key_constraint_on:
+        column: code_id
+        table:
+          schema: public
+          name: wasm_contract
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - sender
-    - byte_code
-    - instantiate_permission
-    - code_id
-    - height
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - sender
+        - byte_code
+        - instantiate_permission
+        - code_id
+        - height
+      filter: {}
+      allow_aggregations: true

@@ -1,21 +1,21 @@
 table:
-  name: fee_grant_allowance
   schema: public
+  name: fee_grant_allowance
 object_relationships:
-- name: grantee
-  using:
-    foreign_key_constraint_on: grantee_address
-- name: granter
-  using:
-    foreign_key_constraint_on: granter_address
+  - name: grantee
+    using:
+      foreign_key_constraint_on: grantee_address
+  - name: granter
+    using:
+      foreign_key_constraint_on: granter_address
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - id
-    - grantee_address
-    - granter_address
-    - allowance
-    - height
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - grantee_address
+        - granter_address
+        - allowance
+        - height
+      filter: {}
+      allow_aggregations: true

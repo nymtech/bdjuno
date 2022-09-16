@@ -132,12 +132,13 @@ type WasmExecuteContract struct {
 	Data            string
 	ExecutedAt      time.Time
 	Height          int64
+	Hash			string
 }
 
 // NewWasmExecuteContract allows to build a new x/wasm execute contract instance
 func NewWasmExecuteContract(
 	sender string, contractAddress string, rawMsg wasmtypes.RawContractMessage,
-	funds sdk.Coins, data string, executedAt time.Time, height int64,
+	funds sdk.Coins, data string, executedAt time.Time, height int64, hash string,
 ) WasmExecuteContract {
 	rawContractMsg, _ := rawMsg.MarshalJSON()
 
@@ -149,5 +150,6 @@ func NewWasmExecuteContract(
 		Data:            data,
 		ExecutedAt:      executedAt,
 		Height:          height,
+		Hash:            hash,
 	}
 }

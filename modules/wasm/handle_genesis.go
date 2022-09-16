@@ -134,6 +134,7 @@ func (m *Module) SaveGenesisMsgs(msgs []wasmtypes.GenesisState_GenMsgs, doc *tmt
 				"",
 				doc.GenesisTime,
 				doc.InitialHeight,
+				"",
 			)
 			genesisExecuteContracts = append(genesisExecuteContracts, executeContract)
 		}

@@ -1,0 +1,25 @@
+table:
+  schema: public
+  name: nyx_nym_mixnet_v1_mixnode
+array_relationships:
+  - name: nyx_nym_mixnet_v1_mixnode_events
+    using:
+      foreign_key_constraint_on:
+        column: identity_key
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_events
+  - name: nyx_nym_mixnet_v1_mixnode_rewards
+    using:
+      foreign_key_constraint_on:
+        column: identity_key
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_reward
+  - name: nyx_nym_mixnet_v1_mixnode_statuses
+    using:
+      foreign_key_constraint_on:
+        column: identity_key
+        table:
+          schema: public
+          name: nyx_nym_mixnet_v1_mixnode_status

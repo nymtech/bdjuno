@@ -2,8 +2,8 @@ package local
 
 import (
 	"fmt"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/forbole/juno/v3/node/local"
@@ -80,4 +80,8 @@ func (s Source) GetContractStates(height int64, contractAddr string) ([]wasmtype
 	}
 
 	return models, nil
+}
+
+func (s Source) GetNymMixnetContractV1MixnodeProfitMargin(height int64, contractAddress string, identityKey string, cdc codec.Codec) (*uint8, error) {
+	panic("not implemented for local")
 }

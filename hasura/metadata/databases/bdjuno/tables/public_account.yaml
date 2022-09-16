@@ -1,56 +1,77 @@
 table:
-  name: account
   schema: public
+  name: account
 object_relationships:
-- name: vesting_account
-  using:
-    manual_configuration:
-      column_mapping:
-        address: address
-      insertion_order: null
-      remote_table:
-        name: vesting_account
-        schema: public
+  - name: vesting_account
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: vesting_account
+        insertion_order: null
+        column_mapping:
+          address: address
 array_relationships:
-- name: proposal_deposits
-  using:
-    foreign_key_constraint_on:
-      column: depositor_address
-      table:
-        name: proposal_deposit
-        schema: public
-- name: proposal_votes
-  using:
-    foreign_key_constraint_on:
-      column: voter_address
-      table:
-        name: proposal_vote
-        schema: public
-- name: proposals
-  using:
-    foreign_key_constraint_on:
-      column: proposer_address
-      table:
-        name: proposal
-        schema: public
-- name: validator_infos
-  using:
-    foreign_key_constraint_on:
-      column: self_delegate_address
-      table:
-        name: validator_info
-        schema: public
-- name: vesting_accounts
-  using:
-    foreign_key_constraint_on:
-      column: address
-      table:
-        name: vesting_account
-        schema: public
+  - name: feeGrantAllowancesByGranterAddress
+    using:
+      foreign_key_constraint_on:
+        column: granter_address
+        table:
+          schema: public
+          name: fee_grant_allowance
+  - name: fee_grant_allowances
+    using:
+      foreign_key_constraint_on:
+        column: grantee_address
+        table:
+          schema: public
+          name: fee_grant_allowance
+  - name: proposal_deposits
+    using:
+      foreign_key_constraint_on:
+        column: depositor_address
+        table:
+          schema: public
+          name: proposal_deposit
+  - name: proposal_votes
+    using:
+      foreign_key_constraint_on:
+        column: voter_address
+        table:
+          schema: public
+          name: proposal_vote
+  - name: proposals
+    using:
+      foreign_key_constraint_on:
+        column: proposer_address
+        table:
+          schema: public
+          name: proposal
+  - name: validator_infos
+    using:
+      foreign_key_constraint_on:
+        column: self_delegate_address
+        table:
+          schema: public
+          name: validator_info
+  - name: vesting_accounts
+    using:
+      foreign_key_constraint_on:
+        column: address
+        table:
+          schema: public
+          name: vesting_account
+  - name: wasm_contracts
+    using:
+      foreign_key_constraint_on:
+        column: creator
+        table:
+          schema: public
+          name: wasm_contract
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - address
-    filter: {}
-  role: anonymous
+  - role: anonymous
+    permission:
+      columns:
+        - address
+      filter: {}
+      allow_aggregations: true

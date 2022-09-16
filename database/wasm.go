@@ -1,11 +1,14 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/rs/zerolog/log"
 
 	dbtypes "github.com/forbole/bdjuno/v3/database/types"
 	dbutils "github.com/forbole/bdjuno/v3/database/utils"
 	"github.com/forbole/bdjuno/v3/types"
+	juno "github.com/forbole/juno/v3/types"
 	"github.com/lib/pq"
 )
 
@@ -141,6 +144,13 @@ VALUES `
 	return nil
 }
 
+// GetWasmContractExists returns all the wasm contracts matching an address that are currently stored inside the database.
+func (db *Db) GetWasmContractExists(contractAddress string) (bool, error) {
+	var count int
+	err := db.Sqlx.Select(&count, `SELECT count(contract_address) FROM wasm_contract WHERE contract_address = '`+contractAddress+`'`)
+	return count > 0, err
+}
+
 // SaveWasmExecuteContract allows to store the wasm contract
 func (db *Db) SaveWasmExecuteContract(wasmExecuteContract types.WasmExecuteContract) error {
 	return db.SaveWasmExecuteContracts([]types.WasmExecuteContract{wasmExecuteContract})
@@ -148,7 +158,7 @@ func (db *Db) SaveWasmExecuteContract(wasmExecuteContract types.WasmExecuteContr
 
 // SaveWasmContracts allows to store the wasm contract slice
 func (db *Db) SaveWasmExecuteContracts(executeContracts []types.WasmExecuteContract) error {
-	paramsNumber := 7
+	paramsNumber := 8
 	slices := dbutils.SplitWasmExecuteContracts(executeContracts, paramsNumber)
 
 	for _, contracts := range slices {
@@ -168,17 +178,84 @@ func (db *Db) SaveWasmExecuteContracts(executeContracts []types.WasmExecuteContr
 func (db *Db) saveWasmExecuteContracts(paramNumber int, executeContracts []types.WasmExecuteContract) error {
 	stmt := `
 INSERT INTO wasm_execute_contract 
-(sender, contract_address, raw_contract_message, funds, data, executed_at, height) 
+(sender, contract_address, raw_contract_message, funds, data, executed_at, height, hash) 
 VALUES `
 
 	var args []interface{}
 	for i, executeContract := range executeContracts {
 		ii := i * paramNumber
-		stmt += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d),",
-			ii+1, ii+2, ii+3, ii+4, ii+5, ii+6, ii+7)
+		stmt += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d),",
+			ii+1, ii+2, ii+3, ii+4, ii+5, ii+6, ii+7, ii+8)
 		args = append(args,
 			executeContract.Sender, executeContract.ContractAddress, string(executeContract.RawContractMsg),
-			pq.Array(dbtypes.NewDbCoins(executeContract.Funds)), executeContract.Data, executeContract.ExecutedAt, executeContract.Height)
+			pq.Array(dbtypes.NewDbCoins(executeContract.Funds)), executeContract.Data, executeContract.ExecutedAt, executeContract.Height, executeContract.Hash)
+	}
+
+	stmt = stmt[:len(stmt)-1] // Remove trailing ","
+
+	stmt += ` ON CONFLICT DO NOTHING`
+
+	_, err := db.Sql.Exec(stmt, args...)
+	if err != nil {
+		return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+	}
+
+	return nil
+}
+
+// TODO: figure out if can use Go 1.18 and golang.org/x/exp/slices
+func contains(slice []string, item string) bool {
+	set := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[item]
+	return ok
+}
+
+// SaveWasmExecuteContractEvents allows to store the wasm contract events
+func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Tx) error {
+	paramsNumber := 7
+
+	excludedEventTypes := []string{"message", "execute"}
+
+	stmt := `
+INSERT INTO wasm_execute_contract_event 
+(sender, contract_address, event_type, attributes, executed_at, height, hash) 
+VALUES `
+
+	var args []interface{}
+	var ii = 0
+	for _, txLog := range tx.Logs {
+		for _, event := range txLog.Events {
+
+			// ignore event types from a list (TODO: make list configurable)
+			if contains(excludedEventTypes, event.Type) {
+				continue
+			}
+
+			stmt += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d),",
+				ii+1, ii+2, ii+3, ii+4, ii+5, ii+6, ii+7)
+			ii += paramsNumber
+
+			var attr = make(map[string]interface{}) // could be `map[string]string` however leaving to handle objects as values
+			for _, entry := range event.Attributes {
+				attr[entry.Key] = entry.Value
+			}
+
+			bytes, _ := json.Marshal(attr)
+
+			args = append(args,
+				executeContract.Sender, executeContract.ContractAddress, event.Type, string(bytes),
+				executeContract.ExecutedAt, executeContract.Height, tx.TxHash)
+		}
+	}
+
+	// when no values are inserted, don't execute anything on the database
+	if ii == 0 {
+		log.Debug().Str("hash", tx.TxHash).Msg("WasmExecuteContract does not have any events to record, skipping...")
+		return nil
 	}
 
 	stmt = stmt[:len(stmt)-1] // Remove trailing ","

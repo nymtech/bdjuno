@@ -1,0 +1,10 @@
+table:
+  schema: public
+  name: nyx_nym_mixnet_v2_mixnode_status
+object_relationships:
+  - name: block
+    using:
+      foreign_key_constraint_on: height
+  - name: nyx_nym_mixnet_v2_mixnode
+    using:
+      foreign_key_constraint_on: mix_id
