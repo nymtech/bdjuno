@@ -4,4 +4,4 @@ set -e
 npm install --global hasura-cli
 
 cd hasura/metadata
-hasura metadata apply --endpoint http://hasura:8080
+hasura metadata apply --endpoint http://hasura:8080 --skip-update-check
