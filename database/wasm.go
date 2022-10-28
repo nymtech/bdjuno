@@ -214,6 +214,19 @@ func contains(slice []string, item string) bool {
 	return ok
 }
 
+// CleanUpWasmExecuteContractEvents cleans up events that are too old to stop database bloat
+func (db *Db) CleanUpWasmExecuteContractEvents() error {
+
+	stmt := `DELETE FROM wasm_execute_contract_event WHERE executed_at < CURRENT_DATE - interval '2 days';`
+
+	_, err := db.Sql.Exec(stmt)
+	if err != nil {
+		return fmt.Errorf("error while cleaning up wasm execute contracts: %s", err)
+	}
+
+	return nil
+}
+
 // SaveWasmExecuteContractEvents allows to store the wasm contract events
 func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Tx) error {
 	paramsNumber := 7

@@ -305,6 +305,12 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 	// process Nym Mixnet v1 messages
 	err = m.handleMessageNymMixnetV1(msgJson, messageName, msg, execute, tx)
 
+	// clean up events
+	err = m.db.CleanUpWasmExecuteContractEvents()
+	if err != nil {
+		log.Err(err).Msg("Could not clean up events for WasmExecuteContract")
+	}
+
 	//panic("lets stop after one message")
 
 	return err
