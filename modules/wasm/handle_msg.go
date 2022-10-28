@@ -386,8 +386,12 @@ func (m *Module) handleMessageNymMixnetV1(msgJson interface{}, messageName strin
 					priorDelegatesCoin := sdk.NewCoins(sdk.NewCoin("unym", sdk.NewInt(decimal.RequireFromString(*priorDelegatesAttr).IntPart())))
 					priorUnitDelegationCoin := decimal.RequireFromString(*priorUnitDelegationAttr)
 
-					// TODO: calculate
-					apy := decimal.Zero
+					delegations := decimal.RequireFromString(*priorDelegatesAttr)
+					delegatorsReward := decimal.RequireFromString(*delegatesRewardAttr)
+
+					// NB: this is only for the delegators, not the entire node rewards
+					delegatorsReturn := delegatorsReward.Div(delegations).Mul(decimal.NewFromInt(24 * 365))
+					apy := delegatorsReturn
 
 					err = m.db.SaveNymMixnetV2MixnodeRewardingEvent(*mixIdInt, operatorRewardCoin, delegatesRewardCoin, priorDelegatesCoin, priorUnitDelegationCoin, apy.InexactFloat64(), event, execute, tx)
 					return err
