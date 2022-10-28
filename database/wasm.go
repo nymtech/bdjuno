@@ -217,9 +217,11 @@ func contains(slice []string, item string) bool {
 // CleanUpWasmExecuteContractEvents cleans up events that are too old to stop database bloat
 func (db *Db) CleanUpWasmExecuteContractEvents() error {
 
-	stmt := `DELETE FROM wasm_execute_contract_event WHERE executed_at < CURRENT_DATE - interval '2 days';`
+	var args []interface{}
 
-	_, err := db.Sql.Exec(stmt)
+	stmt := `DELETE FROM wasm_execute_contract_event WHERE executed_at < CURRENT_DATE - interval '2 days'`
+
+	_, err := db.Sql.Exec(stmt, args...)
 	if err != nil {
 		return fmt.Errorf("error while cleaning up wasm execute contracts: %s", err)
 	}
