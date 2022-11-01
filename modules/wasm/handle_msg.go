@@ -2,6 +2,7 @@ package wasm
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"reflect"
@@ -355,6 +356,26 @@ func (m *Module) handleMessageNymMixnetV1(msgJson interface{}, messageName strin
 		for _, event := range txLog.Events {
 
 			switch event.Type {
+			case "wasm-undelegation":
+				proxyAttr := getValueFromNamedAttribute(event.Attributes, "proxy")
+				amountAttr := getValueFromNamedAttribute(event.Attributes, "amount")
+				delegatorAttr := getValueFromNamedAttribute(event.Attributes, "delegator")
+				identityKeyAttr := getValueFromNamedAttribute(event.Attributes, "delegation_target")
+
+				if amountAttr != nil && delegatorAttr != nil && identityKeyAttr != nil {
+					amountCoin := sdk.NewCoins(sdk.NewCoin("unym", sdk.NewInt(decimal.RequireFromString(*amountAttr).IntPart())))
+					jsonBytes, errJson := json.Marshal(event.Attributes)
+					if errJson != nil {
+						jsonAttr := string(jsonBytes)
+						err = m.db.SaveNymMixnetV1MixnodeEvent("undelegation", "delegator", proxyAttr, *identityKeyAttr, &amountCoin, "wasm-undelegation", jsonAttr, execute, tx)
+						if err != nil {
+							log.Err(err).Msg("Error while saving mixnode v1 event for wasm-undelegation")
+						}
+					} else {
+						log.Err(errJson).Msg("Error while saving mixnode v1 event for wasm-undelegation attributes to JSON")
+					}
+				}
+
 			case "wasm-v2_mix_rewarding":
 				mixId := getValueFromNamedAttribute(event.Attributes, "mix_id")
 				operatorRewardAttr := getValueFromNamedAttribute(event.Attributes, "operator_reward")
@@ -400,7 +421,9 @@ func (m *Module) handleMessageNymMixnetV1(msgJson interface{}, messageName strin
 					apy := delegatorsReturn
 
 					err = m.db.SaveNymMixnetV2MixnodeRewardingEvent(*mixIdInt, operatorRewardCoin, delegatesRewardCoin, priorDelegatesCoin, priorUnitDelegationCoin, apy.InexactFloat64(), event, execute, tx)
-					return err
+					if err != nil {
+						log.Err(err).Msg("Failed to save row in nyx_nym_mixnet_v2_mixnode_reward")
+					}
 				}
 
 			case "wasm-mix_rewarding":

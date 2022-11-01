@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/forbole/bdjuno/v3/database"
 
 	"github.com/forbole/juno/v3/node"
 
@@ -12,13 +13,15 @@ import (
 type Context struct {
 	node    node.Node
 	Sources *modulestypes.Sources
+	Db      *database.Db
 }
 
 // NewContext returns a new Context instance
-func NewContext(node node.Node, sources *modulestypes.Sources) *Context {
+func NewContext(node node.Node, sources *modulestypes.Sources, db *database.Db) *Context {
 	return &Context{
 		node:    node,
 		Sources: sources,
+		Db:      db,
 	}
 }
 

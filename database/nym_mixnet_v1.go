@@ -5,6 +5,7 @@ import (
 	"fmt"
 	dbtypes "github.com/forbole/bdjuno/v3/database/types"
 	"github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
 
 	cosmosTypes "github.com/cosmos/cosmos-sdk/types"
@@ -68,6 +69,24 @@ ON CONFLICT (identity_key) DO UPDATE
 	return nil
 }
 
+func (db *Db) GetNymMixnetV1MixnodeEvent(eventKind string, identityKey string, sender *string, height *int64, executedAt *string) ([]dbtypes.NyxNymMixnetV1MixnodeEventsRow, error) {
+	filter := fmt.Sprintf("WHERE event_kind = '%s' AND identity_key = '%s'", eventKind, identityKey)
+	order := "height ASC, executed_at ASC"
+	if sender != nil {
+		filter = fmt.Sprintf("%s AND sender = '%s'", filter, *sender)
+	}
+	if height != nil {
+		filter = fmt.Sprintf("%s AND height >= %d", filter, *height)
+	} else if executedAt != nil {
+		filter = fmt.Sprintf("%s AND executed_at >= '%s'", filter, *executedAt)
+	}
+	stmt := fmt.Sprintf(`SELECT * FROM nyx_nym_mixnet_v1_mixnode_events %s ORDER BY %s`, filter, order)
+
+	var rows []dbtypes.NyxNymMixnetV1MixnodeEventsRow
+	err := db.Sqlx.Select(&rows, stmt)
+	return rows, err
+}
+
 // SaveNymMixnetV1MixnodeEvent allows to store the wasm contract events
 func (db *Db) SaveNymMixnetV1MixnodeEvent(eventKind string, actor string, proxy *string, identityKey string, amount *cosmosTypes.Coins, dataType string, dataJson string, executeContract types.WasmExecuteContract, tx *juno.Tx) error {
 	stmt := `
@@ -105,6 +124,18 @@ SELECT COUNT(height) FROM nyx_nym_mixnet_v1_mixnode_reward WHERE identity_key = 
 	err := db.Sql.QueryRow(stmt, identityKey, tx.Height, tx.TxHash).Scan(&count)
 
 	return count > 0, err
+}
+
+func (db *Db) GetNymMixnetV1MixnodeRewardEvent(identityKey string, heightMin uint64, heightMax *uint64) ([]dbtypes.NyxNymMixnetV1MixnodeRewardRow, error) {
+	stmt := fmt.Sprintf(`SELECT * FROM nyx_nym_mixnet_v1_mixnode_reward WHERE height >= %d AND identity_key = '%s'`, heightMin, identityKey)
+	if heightMax != nil && *heightMax > 0 {
+		stmt = fmt.Sprintf("%s AND height <= %d", stmt, *heightMax)
+	}
+	stmt = fmt.Sprintf("%s ORDER BY height ASC", stmt)
+	var rows []dbtypes.NyxNymMixnetV1MixnodeRewardRow
+	err := db.Sqlx.Select(&rows, stmt)
+	log.Info().Int("count", len(rows)).Err(err).Msg(stmt)
+	return rows, err
 }
 
 // SaveNymMixnetV1MixnodeRewardingEvent allows to store the mixnode rewarding events

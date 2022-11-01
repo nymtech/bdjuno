@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"sync"
@@ -15,8 +16,10 @@ var (
 )
 
 func (m *Module) RunAdditionalOperations() error {
+	log.Info().Msg("Starting actions worker...")
+
 	// Build the worker
-	context := actionstypes.NewContext(m.node, m.sources)
+	context := actionstypes.NewContext(m.node, m.sources, m.db)
 	worker := actionstypes.NewActionsWorker(context)
 
 	// Register the endpoints
@@ -40,6 +43,12 @@ func (m *Module) RunAdditionalOperations() error {
 	worker.RegisterHandler("/validator_delegations", handlers.ValidatorDelegation)
 	worker.RegisterHandler("/validator_redelegations_from", handlers.ValidatorRedelegationsFromHandler)
 	worker.RegisterHandler("/validator_unbonding_delegations", handlers.ValidatorUnbondingDelegationsHandler)
+
+	// -- Nyx --
+	// -- Nym --
+	// -- Mixnet v1 --
+	worker.RegisterHandler("/nyx/nym/mixnet/v1/mixnode/delegations", handlers.NyxNymMixnetV1DelegationsHandler)
+	worker.RegisterHandler("/nyx/nym/mixnet/v1/mixnode/rewards", handlers.NyxNymMixnetV1RewardsHandler)
 
 	// Listen for and trap any OS signal to gracefully shutdown and exit
 	m.trapSignal()

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/cosmos/cosmos-sdk/simapp/params"
+	"github.com/forbole/bdjuno/v3/database"
 	"github.com/forbole/juno/v3/modules"
 	"github.com/forbole/juno/v3/node"
 	"github.com/forbole/juno/v3/node/builder"
@@ -24,9 +25,10 @@ type Module struct {
 	cfg     *Config
 	node    node.Node
 	sources *modulestypes.Sources
+	db      *database.Db
 }
 
-func NewModule(cfg config.Config, encodingConfig *params.EncodingConfig) *Module {
+func NewModule(cfg config.Config, encodingConfig *params.EncodingConfig, db *database.Db) *Module {
 	bz, err := cfg.GetBytes()
 	if err != nil {
 		panic(err)
@@ -58,6 +60,7 @@ func NewModule(cfg config.Config, encodingConfig *params.EncodingConfig) *Module
 		cfg:     actionsCfg,
 		node:    junoNode,
 		sources: sources,
+		db:      db,
 	}
 }
 

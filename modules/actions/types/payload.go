@@ -13,6 +13,16 @@ func (p *Payload) GetAddress() string {
 	return p.Input.Address
 }
 
+// GetIdentityKey returns the identity key associated with this payload, if any
+func (p *Payload) GetIdentityKey() *string {
+	return &p.Input.IdentityKey
+}
+
+// GetHeight returns the block height associated with this payload, if any
+func (p *Payload) GetHeight() *int64 {
+	return &p.Input.Height
+}
+
 // GetPagination returns the pagination asasociated with this payload, if any
 func (p *Payload) GetPagination() *query.PageRequest {
 	return &query.PageRequest{
@@ -23,9 +33,10 @@ func (p *Payload) GetPagination() *query.PageRequest {
 }
 
 type PayloadArgs struct {
-	Address    string `json:"address"`
-	Height     int64  `json:"height"`
-	Offset     uint64 `json:"offset"`
-	Limit      uint64 `json:"limit"`
-	CountTotal bool   `json:"count_total"`
+	Address     string `json:"address"`
+	IdentityKey string `json:"identity_key"`
+	Height      int64  `json:"height"`
+	Offset      uint64 `json:"offset"`
+	Limit       uint64 `json:"limit"`
+	CountTotal  bool   `json:"count_total"`
 }
