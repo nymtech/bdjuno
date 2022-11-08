@@ -7,7 +7,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.45.3
 	github.com/cosmos/gaia/v6 v6.0.4
 	github.com/forbole/juno/v3 v3.3.1-0.20220803134534-55af63c839ac
-	github.com/go-co-op/gocron v1.16.1
+	github.com/go-co-op/gocron v1.18.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.6
@@ -16,9 +16,9 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/proullon/ramsql v0.0.0-20181213202341-817cee58a244
 	github.com/rs/zerolog v1.27.0
-	github.com/spf13/cobra v1.5.0
-	github.com/stretchr/testify v1.8.0
 	github.com/shopspring/decimal v1.3.1
+	github.com/spf13/cobra v1.5.0
+	github.com/stretchr/testify v1.8.1
 	github.com/tendermint/tendermint v0.34.19
 	google.golang.org/grpc v1.45.0
 	gopkg.in/yaml.v3 v3.0.1
