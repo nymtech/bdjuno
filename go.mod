@@ -3,8 +3,8 @@ module github.com/forbole/bdjuno/v3
 go 1.17
 
 require (
-	github.com/CosmWasm/wasmd v0.22.0
-	github.com/cosmos/cosmos-sdk v0.45.3
+	github.com/CosmWasm/wasmd v0.31.0
+	github.com/cosmos/cosmos-sdk v0.45.14
 	github.com/cosmos/gaia/v6 v6.0.4
 	github.com/forbole/juno/v3 v3.3.1-0.20220803134534-55af63c839ac
 	github.com/go-co-op/gocron v1.16.1
