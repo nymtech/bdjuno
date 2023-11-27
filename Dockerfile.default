@@ -4,8 +4,6 @@ WORKDIR /go/src/github.com/forbole/bdjuno
 COPY . ./
 RUN go mod download
 RUN make build
-RUN ldd build/bdjuno > /deps.txt
-RUN echo $(ldd build/bdjuno | grep libwasmvm.so | awk '{ print $3 }')
 
 FROM alpine:latest
 WORKDIR /bdjuno
