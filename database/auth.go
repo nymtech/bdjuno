@@ -6,13 +6,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/gogo/protobuf/proto"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/lib/pq"
 
-	dbtypes "github.com/forbole/bdjuno/v3/database/types"
-	dbutils "github.com/forbole/bdjuno/v3/database/utils"
+	dbtypes "github.com/forbole/bdjuno/v4/database/types"
+	dbutils "github.com/forbole/bdjuno/v4/database/utils"
 
-	"github.com/forbole/bdjuno/v3/types"
+	"github.com/forbole/bdjuno/v4/types"
 )
 
 // SaveAccounts saves the given accounts inside the database
@@ -51,7 +51,7 @@ func (db *Db) saveAccounts(paramsNumber int, accounts []types.Account) error {
 
 	stmt = stmt[:len(stmt)-1]
 	stmt += " ON CONFLICT DO NOTHING"
-	_, err := db.Sql.Exec(stmt, params...)
+	_, err := db.SQL.Exec(stmt, params...)
 	if err != nil {
 		return fmt.Errorf("error while storing accounts: %s", err)
 	}
@@ -98,8 +98,14 @@ func (db *Db) storeVestingAccount(account exported.VestingAccount) (int, error) 
 			start_time = excluded.start_time
 			RETURNING id `
 
+	// Store the vesting account
+	err := db.SaveAccounts([]types.Account{types.NewAccount(account.GetAddress().String())})
+	if err != nil {
+		return 0, fmt.Errorf("error while storing vesting account address: %s", err)
+	}
+
 	var vestingAccountRowID int
-	err := db.Sql.QueryRow(stmt,
+	err = db.SQL.QueryRow(stmt,
 		proto.MessageName(account),
 		account.GetAddress().String(),
 		pq.Array(dbtypes.NewDbCoins(account.GetOriginalVesting())),
@@ -124,7 +130,13 @@ func (db *Db) StoreBaseVestingAccountFromMsg(bva *vestingtypes.BaseVestingAccoun
 			start_time = excluded.start_time, 
 			end_time = excluded.end_time`
 
-	_, err := db.Sql.Exec(stmt,
+	// Store the vesting account
+	err := db.SaveAccounts([]types.Account{types.NewAccount(bva.GetAddress().String())})
+	if err != nil {
+		return fmt.Errorf("error while storing vesting account address: %s", err)
+	}
+
+	_, err = db.SQL.Exec(stmt,
 		proto.MessageName(bva),
 		bva.GetAddress().String(),
 		pq.Array(dbtypes.NewDbCoins(bva.OriginalVesting)),
@@ -140,7 +152,7 @@ func (db *Db) StoreBaseVestingAccountFromMsg(bva *vestingtypes.BaseVestingAccoun
 func (db *Db) storeVestingPeriods(id int, vestingPeriods []vestingtypes.Period) error {
 	// Delete already existing periods
 	stmt := `DELETE FROM vesting_period WHERE vesting_account_id = $1`
-	_, err := db.Sql.Exec(stmt, id)
+	_, err := db.SQL.Exec(stmt, id)
 	if err != nil {
 		return fmt.Errorf("error while deleting vesting period: %s", err)
 	}
@@ -161,7 +173,7 @@ VALUES `
 	}
 	stmt = stmt[:len(stmt)-1]
 
-	_, err = db.Sql.Exec(stmt, params...)
+	_, err = db.SQL.Exec(stmt, params...)
 	if err != nil {
 		return fmt.Errorf("error while saving vesting periods: %s", err)
 	}

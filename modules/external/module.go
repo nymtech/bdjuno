@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/forbole/juno/v3/modules"
-	"github.com/forbole/juno/v3/types/config"
+	"github.com/forbole/juno/v5/modules"
+	"github.com/forbole/juno/v5/types/config"
 	"github.com/invopop/jsonschema"
 	"github.com/rs/zerolog/log"
 )

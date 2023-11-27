@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/forbole/bdjuno/v3/modules/actions/types"
+	"github.com/forbole/bdjuno/v4/modules/actions/types"
 
 	"github.com/rs/zerolog/log"
 )

@@ -9,7 +9,6 @@ CREATE TABLE wasm_params
     one_row_id                      BOOLEAN         NOT NULL DEFAULT TRUE PRIMARY KEY,
     code_upload_access              ACCESS_CONFIG   NOT NULL,
     instantiate_default_permission  INT             NOT NULL,
-    max_wasm_code_size              INTEGER         NOT NULL,
     height                          BIGINT          NOT NULL
 );
 
@@ -59,4 +58,17 @@ CREATE TABLE wasm_execute_contract
 CREATE INDEX execute_contract_height_index ON wasm_execute_contract (height);
 CREATE INDEX execute_contract_executed_at_index ON wasm_execute_contract (executed_at);
 CREATE INDEX execute_contract_message_type_index ON wasm_execute_contract (message_type);
- 
+
+CREATE TABLE wasm_execute_contract_event_types
+(
+    contract_address         TEXT   NOT NULL REFERENCES wasm_contract (contract_address),
+    event_type               TEXT   NOT NULL,
+
+    first_seen_height        BIGINT NOT NULL REFERENCES block (height),
+    first_seen_hash          TEXT   NOT NULL,
+
+    last_seen_height         BIGINT NOT NULL REFERENCES block (height),
+    last_seen_hash           TEXT   NOT NULL,
+    UNIQUE (contract_address, event_type)
+);
+CREATE INDEX wasm_execute_contract_event_types_index ON wasm_execute_contract_event_types (contract_address, event_type);

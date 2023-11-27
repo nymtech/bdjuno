@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/forbole/bdjuno/v3/types"
-	tmtypes "github.com/tendermint/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/forbole/bdjuno/v4/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/rs/zerolog/log"
@@ -37,17 +37,19 @@ func (m *Module) HandleGenesis(doc *tmtypes.GenesisDoc, appState map[string]json
 		return fmt.Errorf("error while saving genesis wasm contracts: %s", err)
 	}
 
-	err = m.SaveGenesisMsgs(genState.GenMsgs, doc)
-	if err != nil {
-		return fmt.Errorf("error while saving genesis wasm execute contracts: %s", err)
-	}
+	/*
+		err = m.SaveGenesisMsgs(genState.GenMsgs, doc)
+		if err != nil {
+			return fmt.Errorf("error while saving genesis wasm execute contracts: %s", err)
+		}
+	*/
 
 	return nil
 }
 
 func (m *Module) SaveGenesisParams(params wasmtypes.Params, initHeight int64) error {
 	err := m.db.SaveWasmParams(
-		types.NewWasmParams(&params.CodeUploadAccess, int32(params.InstantiateDefaultPermission), params.MaxWasmCodeSize, initHeight),
+		types.NewWasmParams(&params.CodeUploadAccess, int32(params.InstantiateDefaultPermission), initHeight),
 	)
 	if err != nil {
 		return fmt.Errorf("error while saving genesis wasm params: %s", err)
@@ -117,6 +119,8 @@ func (m *Module) SaveGenesisContracts(contracts []wasmtypes.Contract, doc *tmtyp
 	return nil
 }
 
+// This has been removed in later versions
+/*
 func (m *Module) SaveGenesisMsgs(msgs []wasmtypes.GenesisState_GenMsgs, doc *tmtypes.GenesisDoc) error {
 	log.Debug().Str("module", "wasm").Str("operation", "genesis messages").
 		Int("message counts", len(msgs)).Msg("parsing genesis")
@@ -146,3 +150,4 @@ func (m *Module) SaveGenesisMsgs(msgs []wasmtypes.GenesisState_GenMsgs, doc *tmt
 
 	return m.db.SaveWasmExecuteContracts(genesisExecuteContracts)
 }
+*/

@@ -1,7 +1,7 @@
 package wasm
 
 import (
-	juno "github.com/forbole/juno/v3/types"
+	juno "github.com/forbole/juno/v5/types"
 )
 
 // HandleTx implements modules.TransactionModule

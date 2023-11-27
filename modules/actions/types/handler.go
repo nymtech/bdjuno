@@ -2,11 +2,12 @@ package types
 
 import (
 	"fmt"
-	"github.com/forbole/bdjuno/v3/database"
 
-	"github.com/forbole/juno/v3/node"
+	"github.com/forbole/bdjuno/v4/database"
 
-	modulestypes "github.com/forbole/bdjuno/v3/modules/types"
+	"github.com/forbole/juno/v5/node"
+
+	modulestypes "github.com/forbole/bdjuno/v4/modules/types"
 )
 
 // Context contains the data about a Hasura actions worker execution
