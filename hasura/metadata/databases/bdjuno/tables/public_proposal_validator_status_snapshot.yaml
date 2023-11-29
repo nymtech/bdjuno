@@ -12,6 +12,7 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
+        - id
         - proposal_id
         - validator_address
         - voting_power

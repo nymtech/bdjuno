@@ -9,6 +9,7 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
+        - id
         - unit_name
         - price
         - market_cap

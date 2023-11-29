@@ -5,7 +5,10 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
-        - params
+        - one_row_id
+        - deposit_params
+        - voting_params
+        - tally_params
         - height
       filter: {}
       allow_aggregations: true

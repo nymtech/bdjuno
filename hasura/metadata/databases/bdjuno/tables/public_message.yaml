@@ -30,6 +30,7 @@ select_permissions:
         - type
         - value
         - involved_accounts_addresses
+        - partition_id
         - height
       filter: {}
       allow_aggregations: true
