@@ -24,8 +24,10 @@ select_permissions:
         - proposal_id
         - voter_address
         - option
-        - weight
-        - timestamp
+        # TODO: Upstream BDJuno made changes to gov; however gov info is not indexed yet on Nym fork.
+        # DB migrations need to ne done in the future
+        #- weight
+        #- timestamp
         - height
       filter: {}
       allow_aggregations: true

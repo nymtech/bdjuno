@@ -5,7 +5,9 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
-        - params
+        # TODO: Upstream BDJuno made changes to gov; however gov info is not indexed yet on Nym fork.
+        # DB migrations need to ne done in the future
+        #- params
         - height
       filter: {}
       allow_aggregations: true
