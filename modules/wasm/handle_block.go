@@ -1,8 +1,8 @@
 package wasm
 
 import (
-	juno "github.com/forbole/juno/v3/types"
-	tmctypes "github.com/tendermint/tendermint/rpc/core/types"
+	tmctypes "github.com/cometbft/cometbft/rpc/core/types"
+	juno "github.com/forbole/juno/v5/types"
 )
 
 // HandleBlock implements modules.BlockModule

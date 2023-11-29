@@ -8,5 +8,9 @@ select_permissions:
         - height
         - bonded_tokens
         - not_bonded_tokens
+        # TODO: Upstream BDJuno made changes to staking; however stakin g info is not indexed yet on Nym fork.
+        # DB migrations need to ne done in the future
+        #- unbonding_tokens
+        # - staked_not_bonded_tokens
       filter: {}
       allow_aggregations: true

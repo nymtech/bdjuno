@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	dbtypes "github.com/forbole/bdjuno/v3/database/types"
-	"github.com/forbole/bdjuno/v3/modules/actions/types"
+	dbtypes "github.com/forbole/bdjuno/v4/database/types"
+	"github.com/forbole/bdjuno/v4/modules/actions/types"
 	"github.com/rs/zerolog/log"
 )
 

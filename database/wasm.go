@@ -3,29 +3,28 @@ package database
 import (
 	"fmt"
 
-	dbtypes "github.com/forbole/bdjuno/v3/database/types"
-	dbutils "github.com/forbole/bdjuno/v3/database/utils"
-	"github.com/forbole/bdjuno/v3/types"
-	juno "github.com/forbole/juno/v3/types"
+	dbtypes "github.com/forbole/bdjuno/v4/database/types"
+	dbutils "github.com/forbole/bdjuno/v4/database/utils"
+	"github.com/forbole/bdjuno/v4/types"
+	juno "github.com/forbole/juno/v5/types"
 	"github.com/lib/pq"
 )
 
 // SaveWasmParams allows to store the wasm params
 func (db *Db) SaveWasmParams(params types.WasmParams) error {
 	stmt := `
-INSERT INTO wasm_params(code_upload_access, instantiate_default_permission, max_wasm_code_size, height) 
-VALUES ($1, $2, $3, $4) 
+INSERT INTO wasm_params(code_upload_access, instantiate_default_permission, height) 
+VALUES ($1, $2, $3) 
 ON CONFLICT (one_row_id) DO UPDATE 
 	SET code_upload_access = excluded.code_upload_access, 
 		instantiate_default_permission = excluded.instantiate_default_permission, 
-		max_wasm_code_size = excluded.max_wasm_code_size 
 WHERE wasm_params.height <= excluded.height
 `
 	accessConfig := dbtypes.NewDbAccessConfig(params.CodeUploadAccess)
 	cfgValue, _ := accessConfig.Value()
 
-	_, err := db.Sql.Exec(stmt,
-		cfgValue, params.InstantiateDefaultPermission, params.MaxWasmCodeSize, params.Height,
+	_, err := db.SQL.Exec(stmt,
+		cfgValue, params.InstantiateDefaultPermission, params.Height,
 	)
 	if err != nil {
 		return fmt.Errorf("error while saving wasm params: %s", err)
@@ -70,7 +69,7 @@ VALUES `
 			height = excluded.height
 	WHERE wasm_code.height <= excluded.height`
 
-	_, err := db.Sql.Exec(stmt, args...)
+	_, err := db.SQL.Exec(stmt, args...)
 	if err != nil {
 		return fmt.Errorf("error while saving wasm code: %s", err)
 	}
@@ -134,7 +133,7 @@ VALUES `
 			height = excluded.height
 	WHERE wasm_contract.height <= excluded.height`
 
-	_, err := db.Sql.Exec(stmt, args...)
+	_, err := db.SQL.Exec(stmt, args...)
 	if err != nil {
 		return fmt.Errorf("error while saving wasm contracts: %s", err)
 	}
@@ -145,7 +144,7 @@ VALUES `
 // GetWasmContractExists returns all the wasm contracts matching an address that are currently stored inside the database.
 func (db *Db) GetWasmContractExists(contractAddress string) (bool, error) {
 	var count int
-	err := db.Sqlx.Select(&count, `SELECT count(contract_address) FROM wasm_contract WHERE contract_address = '`+contractAddress+`'`)
+	err := db.SQL.Select(&count, `SELECT count(contract_address) FROM wasm_contract WHERE contract_address = '`+contractAddress+`'`)
 	return count > 0, err
 }
 
@@ -193,7 +192,7 @@ VALUES `
 
 	stmt += ` ON CONFLICT DO NOTHING`
 
-	_, err := db.Sql.Exec(stmt, args...)
+	_, err := db.SQL.Exec(stmt, args...)
 	if err != nil {
 		return fmt.Errorf("error while saving wasm execute contracts: %s", err)
 	}
@@ -219,7 +218,7 @@ SET (last_seen_height, last_seen_hash) = (EXCLUDED.last_seen_height, EXCLUDED.la
 	for _, txLog := range tx.Logs {
 		for _, event := range txLog.Events {
 
-			_, err := db.Sql.Exec(stmt, executeContract.ContractAddress, event.Type,
+			_, err := db.SQL.Exec(stmt, executeContract.ContractAddress, event.Type,
 				executeContract.Height, tx.TxHash)
 			if err != nil {
 				return fmt.Errorf("error while saving wasm execute contracts: %s", err)
@@ -238,7 +237,7 @@ func (db *Db) UpdateContractWithMsgMigrateContract(
 sender = $1, code_id = $2, raw_contract_message = $3, data = $4 
 WHERE contract_address = $5 `
 
-	_, err := db.Sql.Exec(stmt,
+	_, err := db.SQL.Exec(stmt,
 		sender, codeID, string(rawContractMsg), data,
 		contractAddress,
 	)
@@ -254,7 +253,7 @@ func (db *Db) UpdateContractAdmin(sender string, contractAddress string, newAdmi
 	stmt := `UPDATE wasm_contract SET 
 sender = $1, admin = $2 WHERE contract_address = $2 `
 
-	_, err := db.Sql.Exec(stmt, sender, newAdmin, contractAddress)
+	_, err := db.SQL.Exec(stmt, sender, newAdmin, contractAddress)
 	if err != nil {
 		return fmt.Errorf("error while updating wsm contract admin: %s", err)
 	}

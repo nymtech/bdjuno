@@ -4,24 +4,37 @@ import (
 	"fmt"
 	"time"
 
+	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/gogo/protobuf/proto"
 
-	"github.com/forbole/bdjuno/v3/types"
+	"github.com/forbole/bdjuno/v4/testutils"
+	"github.com/forbole/bdjuno/v4/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	dbtypes "github.com/forbole/bdjuno/v3/database/types"
+	dbtypes "github.com/forbole/bdjuno/v4/database/types"
 )
 
 func (suite *DbTestSuite) TestBigDipperDb_SaveGovParams() {
-	votingParams := govtypes.NewVotingParams(time.Second * 10)
-	tallyParams := govtypes.NewTallyParams(sdk.NewDec(10), sdk.NewDec(10), sdk.NewDec(10))
-	depositParams := govtypes.NewDepositParams(sdk.NewCoins(sdk.NewCoin("uatom", sdk.NewInt(10))), time.Minute*5)
-	original := types.NewGovParams(types.NewVotingParams(votingParams), types.NewDepositParam(depositParams), types.NewTallyParams(tallyParams), 10)
+	params := govtypesv1.Params{
+		MinDeposit:                 []sdk.Coin{sdk.NewCoin("uatom", sdk.NewInt(1000))},
+		MaxDepositPeriod:           testutils.NewDurationPointer(time.Duration(int64(300000000000))),
+		VotingPeriod:               testutils.NewDurationPointer(time.Duration(int64(300000))),
+		Quorum:                     "0.5",
+		Threshold:                  "0.3",
+		VetoThreshold:              "0.15",
+		MinInitialDepositRatio:     "0",
+		BurnVoteQuorum:             false,
+		BurnProposalDepositPrevote: false,
+		BurnVoteVeto:               false,
+	}
+
+	original := types.NewGovParams(&params, 10)
 
 	err := suite.database.SaveGovParams(original)
 	suite.Require().NoError(err)
@@ -32,8 +45,8 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveGovParams() {
 
 	// ----------------------------------------------------------------------------------------------------------------
 	// Try updating with a lower height
-	depositParams = govtypes.NewDepositParams(sdk.NewCoins(sdk.NewCoin("uatom", sdk.NewInt(1000))), time.Minute*5)
-	updated := types.NewGovParams(types.NewVotingParams(votingParams), types.NewDepositParam(depositParams), types.NewTallyParams(tallyParams), 9)
+	params.BurnVoteQuorum = false
+	updated := types.NewGovParams(&params, 9)
 
 	err = suite.database.SaveGovParams(updated)
 	suite.Require().NoError(err)
@@ -43,8 +56,9 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveGovParams() {
 	suite.Require().Equal(original, stored)
 
 	// ----------------------------------------------------------------------------------------------------------------
-	// Try updating with the same height	depositParams = govtypes.NewDepositParams(sdk.NewCoins(sdk.NewCoin("uatom", sdk.NewInt(1000))), time.Minute*5)
-	updated = types.NewGovParams(types.NewVotingParams(votingParams), types.NewDepositParam(depositParams), types.NewTallyParams(tallyParams), 10)
+	// Try updating with the same height
+	params.BurnProposalDepositPrevote = true
+	updated = types.NewGovParams(&params, 10)
 
 	err = suite.database.SaveGovParams(updated)
 	suite.Require().NoError(err)
@@ -55,9 +69,8 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveGovParams() {
 
 	// ----------------------------------------------------------------------------------------------------------------
 	// Try updating with a higher height
-	tallyParams = govtypes.NewTallyParams(sdk.NewDec(100), sdk.NewDec(100), sdk.NewDec(100))
-	depositParams = govtypes.NewDepositParams(sdk.NewCoins(sdk.NewCoin("udesmos", sdk.NewInt(10000))), time.Minute*5)
-	updated = types.NewGovParams(types.NewVotingParams(votingParams), types.NewDepositParam(depositParams), types.NewTallyParams(tallyParams), 11)
+	params.BurnVoteVeto = true
+	updated = types.NewGovParams(&params, 11)
 
 	err = suite.database.SaveGovParams(updated)
 	suite.Require().NoError(err)
@@ -72,77 +85,94 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveGovParams() {
 func (suite *DbTestSuite) getProposalRow(id int) types.Proposal {
 	proposer := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
 
-	title := fmt.Sprintf("title%d", id)
-	description := fmt.Sprintf("description%d", id)
-	proposalRoute := fmt.Sprintf("proposalRoute%d", id)
-	proposalType := fmt.Sprintf("proposalType%d", id)
+	msgAny, err := codectypes.NewAnyWithValue(&govtypesv1.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress(gov.ModuleName).String(),
+		Params: govtypesv1.Params{
+			MinDeposit:                 []sdk.Coin{sdk.NewCoin("uatom", sdk.NewInt(1000))},
+			MaxDepositPeriod:           testutils.NewDurationPointer(time.Duration(int64(300000000000))),
+			VotingPeriod:               testutils.NewDurationPointer(time.Duration(int64(300000))),
+			Quorum:                     "0.5",
+			Threshold:                  "0.3",
+			VetoThreshold:              "0.15",
+			MinInitialDepositRatio:     "0",
+			BurnVoteQuorum:             false,
+			BurnProposalDepositPrevote: false,
+			BurnVoteVeto:               false,
+		},
+	})
+	suite.Require().NoError(err)
 
 	proposal := types.NewProposal(
 		uint64(id),
-		proposalRoute,
-		proposalType,
-		govtypes.NewTextProposal(title, description),
-		govtypes.StatusPassed.String(),
+		fmt.Sprintf("Proposal %d", id),
+		fmt.Sprintf("Description of proposal %d", id),
+		fmt.Sprintf("Metadata of proposal %d", id),
+		[]*codectypes.Any{msgAny},
+		govtypesv1.StatusVotingPeriod.String(),
 		time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 		time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+		testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+		testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 		proposer.String(),
 	)
 
-	err := suite.database.SaveProposals([]types.Proposal{proposal})
+	err = suite.database.SaveProposals([]types.Proposal{proposal})
 	suite.Require().NoError(err)
 
 	return proposal
 }
 
-func (suite *DbTestSuite) encodeProposalContent(content govtypes.Content) string {
-	protoContent, ok := content.(proto.Message)
-	suite.Require().True(ok)
-
-	anyContent, err := codectypes.NewAnyWithValue(protoContent)
-	suite.Require().NoError(err)
-
-	contentBz, err := suite.database.EncodingConfig.Marshaler.MarshalJSON(anyContent)
-	suite.Require().NoError(err)
-
-	return string(contentBz)
-}
-
 func (suite *DbTestSuite) TestBigDipperDb_SaveProposals() {
 	proposer1 := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
+	msgAny, err := codectypes.NewAnyWithValue(&govtypesv1.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress(gov.ModuleName).String(),
+		Params: govtypesv1.Params{
+			MinDeposit:                 []sdk.Coin{sdk.NewCoin("uatom", sdk.NewInt(1000))},
+			MaxDepositPeriod:           testutils.NewDurationPointer(time.Duration(int64(300000000000))),
+			VotingPeriod:               testutils.NewDurationPointer(time.Duration(int64(300000))),
+			Quorum:                     "0.5",
+			Threshold:                  "0.3",
+			VetoThreshold:              "0.15",
+			MinInitialDepositRatio:     "0",
+			BurnVoteQuorum:             false,
+			BurnProposalDepositPrevote: false,
+			BurnVoteVeto:               false,
+		},
+	})
+	suite.Require().NoError(err)
+
 	proposer2 := suite.getAccount("cosmos184ma3twcfjqef6k95ne8w2hk80x2kah7vcwy4a")
 
-	content1 := govtypes.NewTextProposal("title", "description")
-	content2 := govtypes.NewTextProposal("title1", "description1")
 	input := []types.Proposal{
 		types.NewProposal(
 			1,
-			"proposalRoute",
-			"proposalType",
-			content1,
-			govtypes.StatusDepositPeriod.String(),
+			"Proposal Title 1",
+			"Proposal Description 1",
+			"Proposal Metadata 1",
+			[]*codectypes.Any{msgAny},
+			govtypesv1.StatusDepositPeriod.String(),
 			time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 			proposer1.String(),
 		),
 		types.NewProposal(
 			2,
-			"proposalRoute1",
-			"proposalType1",
-			content2,
-			govtypes.StatusPassed.String(),
+			"Proposal Title 2",
+			"Proposal Description 2",
+			"Proposal Metadata 2",
+			nil,
+			govtypesv1.StatusPassed.String(),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 2, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC)),
 			proposer2.String(),
 		),
 	}
 
-	err := suite.database.SaveProposals(input)
+	err = suite.database.SaveProposals(input)
 	suite.Require().NoError(err)
 
 	var proposalRow []dbtypes.ProposalRow
@@ -152,31 +182,29 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposals() {
 	expected := []dbtypes.ProposalRow{
 		dbtypes.NewProposalRow(
 			1,
-			"proposalRoute",
-			"proposalType",
-			"title",
-			"description",
-			suite.encodeProposalContent(content1),
+			"Proposal Title 1",
+			"Proposal Description 1",
+			"Proposal Metadata 1",
+			"[{\"@type\": \"/cosmos.gov.v1.MsgUpdateParams\", \"params\": {\"quorum\": \"0.5\", \"threshold\": \"0.3\", \"min_deposit\": [{\"denom\": \"uatom\", \"amount\": \"1000\"}], \"voting_period\": \"0.000300s\", \"burn_vote_veto\": false, \"veto_threshold\": \"0.15\", \"burn_vote_quorum\": false, \"max_deposit_period\": \"300s\", \"min_initial_deposit_ratio\": \"0\", \"burn_proposal_deposit_prevote\": false}, \"authority\": \"cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn\"}]",
 			time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 			proposer1.String(),
-			govtypes.StatusDepositPeriod.String(),
+			govtypesv1.StatusDepositPeriod.String(),
 		),
 		dbtypes.NewProposalRow(
 			2,
-			"proposalRoute1",
-			"proposalType1",
-			"title1",
-			"description1",
-			suite.encodeProposalContent(content2),
+			"Proposal Title 2",
+			"Proposal Description 2",
+			"Proposal Metadata 2",
+			"[]",
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 2, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC)),
 			proposer2.String(),
-			govtypes.StatusPassed.String(),
+			govtypesv1.StatusPassed.String(),
 		),
 	}
 	for i, expect := range expected {
@@ -185,93 +213,128 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposals() {
 }
 
 func (suite *DbTestSuite) TestBigDipperDb_GetProposal() {
-	content := govtypes.NewTextProposal("title", "description")
 	proposer := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
+	msgAny, err := codectypes.NewAnyWithValue(&govtypesv1.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress(gov.ModuleName).String(),
+		Params: govtypesv1.Params{
+			MinDeposit:                 []sdk.Coin{sdk.NewCoin("uatom", sdk.NewInt(1000))},
+			MaxDepositPeriod:           testutils.NewDurationPointer(time.Duration(int64(300000000000))),
+			VotingPeriod:               testutils.NewDurationPointer(time.Duration(int64(300000))),
+			Quorum:                     "0.5",
+			Threshold:                  "0.3",
+			VetoThreshold:              "0.15",
+			MinInitialDepositRatio:     "0",
+			BurnVoteQuorum:             false,
+			BurnProposalDepositPrevote: false,
+			BurnVoteVeto:               false,
+		},
+	})
+	suite.Require().NoError(err)
 	proposal := types.NewProposal(
 		1,
-		"proposalRoute",
-		"proposalType",
-		content,
-		govtypes.StatusDepositPeriod.String(),
+		"Proposal Title 1",
+		"Proposal Description 1",
+		"Proposal Metadata 1",
+		[]*codectypes.Any{msgAny},
+		govtypesv1.StatusDepositPeriod.String(),
 		time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 		time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+		testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+		testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 		proposer.String(),
 	)
 	input := []types.Proposal{proposal}
 
-	err := suite.database.SaveProposals(input)
+	err = suite.database.SaveProposals(input)
 	suite.Require().NoError(err)
 
-	stored, err := suite.database.GetProposal(1)
+	var rows []dbtypes.ProposalRow
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM proposal`)
 	suite.Require().NoError(err)
-	suite.Require().True(proposal.Equal(*stored))
+	suite.Require().Len(rows, 1)
 }
 
 func (suite *DbTestSuite) TestBigDipperDb_GetOpenProposalsIds() {
 	proposer1 := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
 	proposer2 := suite.getAccount("cosmos184ma3twcfjqef6k95ne8w2hk80x2kah7vcwy4a")
 
-	content1 := govtypes.NewTextProposal("title", "description")
-	content2 := govtypes.NewTextProposal("title1", "description1")
+	invalidProposal := types.NewProposal(
+		6,
+		"Proposal Title 6",
+		"Proposal Description 6",
+		"Proposal Metadata 6",
+		nil,
+		types.ProposalStatusInvalid,
+		time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 2, 01, 00, 00, 000, time.UTC),
+		testutils.NewTimePointer(time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC)),
+		testutils.NewTimePointer(time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC)),
+		proposer2.String(),
+	)
+
 	input := []types.Proposal{
 		types.NewProposal(
 			1,
-			"proposalRoute",
-			"proposalType",
-			content1,
-			govtypes.StatusVotingPeriod.String(),
+			"Proposal Title 2",
+			"Proposal Description 2",
+			"Proposal Metadata 2",
+			nil,
+			govtypesv1.StatusVotingPeriod.String(),
 			time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 			proposer1.String(),
 		),
 		types.NewProposal(
 			2,
-			"proposalRoute",
-			"proposalType",
-			content1,
-			govtypes.StatusDepositPeriod.String(),
+			"Proposal Title 2",
+			"Proposal Description 2",
+			"Proposal Metadata 2",
+			nil,
+			govtypesv1.StatusDepositPeriod.String(),
 			time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 1, 03, 00, 00, 000, time.UTC)),
 			proposer1.String(),
 		),
 		types.NewProposal(
 			3,
-			"proposalRoute1",
-			"proposalType1",
-			content2,
-			govtypes.StatusPassed.String(),
+			"Proposal Title 3",
+			"Proposal Description 3",
+			"Proposal Metadata 3",
+			nil,
+			govtypesv1.StatusPassed.String(),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 2, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC)),
 			proposer2.String(),
 		),
 		types.NewProposal(
 			5,
-			"proposalRoute1",
-			"proposalType1",
-			content2,
-			govtypes.StatusRejected.String(),
+			"Proposal Title 5",
+			"Proposal Description 5",
+			"Proposal Metadata 5",
+			nil,
+			govtypesv1.StatusRejected.String(),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 			time.Date(2020, 1, 2, 01, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC),
-			time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 02, 00, 00, 000, time.UTC)),
+			testutils.NewTimePointer(time.Date(2020, 1, 2, 03, 00, 00, 000, time.UTC)),
 			proposer2.String(),
 		),
+		invalidProposal,
 	}
 
 	err := suite.database.SaveProposals(input)
 	suite.Require().NoError(err)
 
-	ids, err := suite.database.GetOpenProposalsIds()
+	timeBeforeDepositEnd := invalidProposal.DepositEndTime.Add(-1 * time.Hour)
+	ids, err := suite.database.GetOpenProposalsIds(timeBeforeDepositEnd)
 	suite.Require().NoError(err)
-	suite.Require().Equal([]uint64{1, 2}, ids)
+	suite.Require().Equal([]uint64{1, 2, 6}, ids)
 }
 
 func (suite *DbTestSuite) TestBigDipperDb_UpdateProposal() {
@@ -279,38 +342,37 @@ func (suite *DbTestSuite) TestBigDipperDb_UpdateProposal() {
 	proposer, err := sdk.AccAddressFromBech32(proposal.Proposer)
 	suite.Require().NoError(err)
 
+	timestamp1 := testutils.NewTimePointer(time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC))
+	timestamp2 := testutils.NewTimePointer(time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC))
+
 	update := types.NewProposalUpdate(
-		proposal.ProposalID,
-		govtypes.StatusPassed.String(),
-		time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
+		proposal.ID,
+		govtypesv1.StatusPassed.String(),
+		timestamp1,
+		timestamp2,
 	)
 
 	err = suite.database.UpdateProposal(update)
 	suite.Require().NoError(err)
 
 	expected := dbtypes.NewProposalRow(
-		proposal.ProposalID,
-		proposal.ProposalRoute,
-		proposal.ProposalType,
-		proposal.Content.GetTitle(),
-		proposal.Content.GetDescription(),
-		suite.encodeProposalContent(proposal.Content),
+		proposal.ID,
+		"Proposal 1",
+		"Description of proposal 1",
+		"Metadata of proposal 1",
+		"[{\"@type\": \"/cosmos.gov.v1.MsgUpdateParams\", \"params\": {\"quorum\": \"0.5\", \"threshold\": \"0.3\", \"min_deposit\": [{\"denom\": \"uatom\", \"amount\": \"1000\"}], \"voting_period\": \"0.000300s\", \"burn_vote_veto\": false, \"veto_threshold\": \"0.15\", \"burn_vote_quorum\": false, \"max_deposit_period\": \"300s\", \"min_initial_deposit_ratio\": \"0\", \"burn_proposal_deposit_prevote\": false}, \"authority\": \"cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn\"}]",
 		proposal.SubmitTime,
 		proposal.DepositEndTime,
-		time.Date(2020, 1, 1, 00, 00, 00, 000, time.UTC),
-		time.Date(2020, 1, 1, 01, 00, 00, 000, time.UTC),
+		timestamp1,
+		timestamp2,
 		proposer.String(),
-		govtypes.StatusPassed.String(),
+		govtypesv1.StatusPassed.String(),
 	)
 
-	var result []dbtypes.ProposalRow
-	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal`)
+	var stored dbtypes.ProposalRow
+	err = suite.database.SQL.Get(&stored, `SELECT * FROM proposal LIMIT 1`)
 	suite.Require().NoError(err)
-	suite.Require().Len(result, 1)
-	for _, r := range result {
-		suite.Require().True(expected.Equals(r))
-	}
+	suite.Require().True(expected.Equals(stored))
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -324,26 +386,33 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveDeposits() {
 
 	depositor := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
 	amount := sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(10000)))
+	txHash := "D40FE0C386FA85677FFB9B3C4CECD54CF2CD7ABECE4EF15FAEF328FCCBF4C3A8"
 
 	depositor2 := suite.getAccount("cosmos184ma3twcfjqef6k95ne8w2hk80x2kah7vcwy4a")
 	amount2 := sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(30000)))
+	txHash2 := "40A9812A137256E88593E19428E006C01D87DB35F60F8D14739B4A46AC3C67A5"
 
 	depositor3 := suite.getAccount("cosmos1gyds87lg3m52hex9yqta2mtwzw89pfukx3jl7g")
 	amount3 := sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(50000)))
+	txHash3 := "086CFE10741EF3800DB7F72B1666DE298DD40913BBB84C5530C87AF5EDE8027A"
+
+	timestamp1 := time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC)
+	timestamp2 := time.Date(2020, 1, 1, 16, 00, 00, 000, time.UTC)
+	timestamp3 := time.Date(2020, 1, 1, 17, 00, 00, 000, time.UTC)
 
 	deposit := []types.Deposit{
-		types.NewDeposit(proposal.ProposalID, depositor.String(), amount, 10),
-		types.NewDeposit(proposal.ProposalID, depositor2.String(), amount2, 10),
-		types.NewDeposit(proposal.ProposalID, depositor3.String(), amount3, 10),
+		types.NewDeposit(proposal.ID, depositor.String(), amount, timestamp1, txHash, 10),
+		types.NewDeposit(proposal.ID, depositor2.String(), amount2, timestamp2, txHash2, 10),
+		types.NewDeposit(proposal.ID, depositor3.String(), amount3, timestamp3, txHash3, 10),
 	}
 
 	err := suite.database.SaveDeposits(deposit)
 	suite.Require().NoError(err)
 
 	expected := []dbtypes.DepositRow{
-		dbtypes.NewDepositRow(1, depositor.String(), dbtypes.NewDbCoins(amount), 10),
-		dbtypes.NewDepositRow(1, depositor2.String(), dbtypes.NewDbCoins(amount2), 10),
-		dbtypes.NewDepositRow(1, depositor3.String(), dbtypes.NewDbCoins(amount3), 10),
+		dbtypes.NewDepositRow(1, depositor.String(), dbtypes.NewDbCoins(amount), timestamp1, txHash, 10),
+		dbtypes.NewDepositRow(1, depositor2.String(), dbtypes.NewDbCoins(amount2), timestamp2, txHash2, 10),
+		dbtypes.NewDepositRow(1, depositor3.String(), dbtypes.NewDbCoins(amount3), timestamp3, txHash3, 10),
 	}
 	var result []dbtypes.DepositRow
 	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_deposit`)
@@ -355,28 +424,24 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveDeposits() {
 	// ----------------------------------------------------------------------------------------------------------------
 	// Update values
 
-	amount = sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(10)))
-	amount2 = sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(20)))
-	amount3 = sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(30)))
-
 	deposit = []types.Deposit{
-		types.NewDeposit(proposal.ProposalID, depositor.String(), amount, 9),
-		types.NewDeposit(proposal.ProposalID, depositor2.String(), amount2, 10),
-		types.NewDeposit(proposal.ProposalID, depositor3.String(), amount3, 11),
+		types.NewDeposit(proposal.ID, depositor.String(), amount, timestamp1, "8E6EA32C656A6EED84132425533E897D458F1B877080DF842B068C4AS92WP01A", 9),
+		types.NewDeposit(proposal.ID, depositor2.String(), amount2, timestamp2, txHash2, 11),
+		types.NewDeposit(proposal.ID, depositor3.String(), sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(30))), timestamp3, txHash3, 11),
 	}
 
 	err = suite.database.SaveDeposits(deposit)
 	suite.Require().NoError(err)
 
 	expected = []dbtypes.DepositRow{
-		dbtypes.NewDepositRow(1, depositor.String(), dbtypes.NewDbCoins(
-			sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(10000)))), 10),
-		dbtypes.NewDepositRow(1, depositor2.String(), dbtypes.NewDbCoins(amount2), 10),
-		dbtypes.NewDepositRow(1, depositor3.String(), dbtypes.NewDbCoins(amount3), 11),
+		dbtypes.NewDepositRow(1, depositor.String(), dbtypes.NewDbCoins(amount), timestamp1, txHash, 10),
+		dbtypes.NewDepositRow(1, depositor.String(), dbtypes.NewDbCoins(amount), timestamp1, "8E6EA32C656A6EED84132425533E897D458F1B877080DF842B068C4AS92WP01A", 9),
+		dbtypes.NewDepositRow(1, depositor2.String(), dbtypes.NewDbCoins(amount2), timestamp2, txHash2, 11),
+		dbtypes.NewDepositRow(1, depositor3.String(), dbtypes.NewDbCoins(sdk.NewCoins(sdk.NewCoin("desmos", sdk.NewInt(30)))), timestamp3, txHash3, 11),
 	}
 
 	result = []dbtypes.DepositRow{}
-	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_deposit`)
+	err = suite.database.SQL.Select(&result, `SELECT * FROM proposal_deposit`)
 	suite.Require().NoError(err)
 	for i, r := range result {
 		suite.Require().True(expected[i].Equals(r))
@@ -393,54 +458,88 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveVote() {
 	proposal := suite.getProposalRow(1)
 	voter := suite.getAccount("cosmos1z4hfrxvlgl4s8u4n5ngjcw8kdqrcv43599amxs")
 
-	vote := types.NewVote(1, voter.String(), govtypes.OptionYes, 1)
+	timestamp := time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC)
+
+	vote := types.NewVote(1, voter.String(), govtypesv1.OptionYes, "0.5", timestamp, 1)
 	err := suite.database.SaveVote(vote)
 	suite.Require().NoError(err)
 
-	expected := dbtypes.NewVoteRow(int64(proposal.ProposalID), voter.String(), govtypes.OptionYes.String(), 1)
+	vote2 := types.NewVote(1, voter.String(), govtypesv1.OptionNo, "0.5", timestamp, 1)
+	err = suite.database.SaveVote(vote2)
+	suite.Require().NoError(err)
+
+	expected := []dbtypes.VoteRow{
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionYes.String(), "0.5", timestamp, 1),
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionNo.String(), "0.5", timestamp, 1),
+	}
 
 	var result []dbtypes.VoteRow
-	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_vote`)
+	err = suite.database.SQL.Select(&result, `SELECT * FROM proposal_vote`)
 	suite.Require().NoError(err)
-	suite.Require().Len(result, 1)
-	suite.Require().True(expected.Equals(result[0]))
+	suite.Require().Len(result, 2)
+	for i, r := range result {
+		suite.Require().True(expected[i].Equals(r))
+	}
 
 	// Update with lower height should not change option
-	vote = types.NewVote(1, voter.String(), govtypes.OptionNo, 0)
+	vote = types.NewVote(1, voter.String(), govtypesv1.OptionYes, "0.7", timestamp, 0)
 	err = suite.database.SaveVote(vote)
 	suite.Require().NoError(err)
 
-	result = []dbtypes.VoteRow{}
-	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_vote`)
+	vote2 = types.NewVote(1, voter.String(), govtypesv1.OptionNo, "0.3", timestamp, 0)
+	err = suite.database.SaveVote(vote2)
 	suite.Require().NoError(err)
-	suite.Require().Len(result, 1)
-	suite.Require().True(expected.Equals(result[0]))
+
+	result = []dbtypes.VoteRow{}
+	err = suite.database.SQL.Select(&result, `SELECT * FROM proposal_vote`)
+	suite.Require().NoError(err)
+	suite.Require().Len(result, 2)
+	for i, r := range result {
+		suite.Require().True(expected[i].Equals(r))
+	}
 
 	// Update with same height should change option
-	vote = types.NewVote(1, voter.String(), govtypes.OptionAbstain, 1)
+	vote = types.NewVote(1, voter.String(), govtypesv1.OptionYes, "0.6", timestamp, 1)
 	err = suite.database.SaveVote(vote)
 	suite.Require().NoError(err)
 
-	expected = dbtypes.NewVoteRow(int64(proposal.ProposalID), voter.String(), govtypes.OptionAbstain.String(), 1)
+	vote2 = types.NewVote(1, voter.String(), govtypesv1.OptionNo, "0.4", timestamp, 1)
+	err = suite.database.SaveVote(vote2)
+	suite.Require().NoError(err)
+
+	expected = []dbtypes.VoteRow{
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionYes.String(), "0.6", timestamp, 1),
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionNo.String(), "0.4", timestamp, 1),
+	}
 
 	result = []dbtypes.VoteRow{}
 	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_vote`)
 	suite.Require().NoError(err)
-	suite.Require().Len(result, 1)
-	suite.Require().True(expected.Equals(result[0]))
+	suite.Require().Len(result, 2)
+	for i, r := range result {
+		suite.Require().True(expected[i].Equals(r))
+	}
 
 	// Update with higher height should change option
-	vote = types.NewVote(1, voter.String(), govtypes.OptionNoWithVeto, 2)
+	vote = types.NewVote(1, voter.String(), govtypesv1.OptionYes, "0.6", timestamp, 3)
 	err = suite.database.SaveVote(vote)
 	suite.Require().NoError(err)
 
-	expected = dbtypes.NewVoteRow(int64(proposal.ProposalID), voter.String(), govtypes.OptionNoWithVeto.String(), 2)
+	vote2 = types.NewVote(1, voter.String(), govtypesv1.OptionNo, "0.4", timestamp, 3)
+	err = suite.database.SaveVote(vote2)
+	suite.Require().NoError(err)
 
+	expected = []dbtypes.VoteRow{
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionYes.String(), "0.6", timestamp, 3),
+		dbtypes.NewVoteRow(int64(proposal.ID), voter.String(), govtypesv1.OptionNo.String(), "0.4", timestamp, 3),
+	}
 	result = []dbtypes.VoteRow{}
 	err = suite.database.Sqlx.Select(&result, `SELECT * FROM proposal_vote`)
 	suite.Require().NoError(err)
-	suite.Require().Len(result, 1)
-	suite.Require().True(expected.Equals(result[0]))
+	suite.Require().Len(result, 2)
+	for i, r := range result {
+		suite.Require().True(expected[i].Equals(r))
+	}
 }
 
 func (suite *DbTestSuite) TestBigDipperDb_SaveTallyResults() {
@@ -505,7 +604,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalStakingPoolSnapshot() {
 	// ----------------------------------------------------------------------------------------------------------------
 	// Save snapshot
 
-	snapshot := types.NewProposalStakingPoolSnapshot(1, types.NewPool(
+	snapshot := types.NewProposalStakingPoolSnapshot(1, types.NewPoolSnapshot(
 		sdk.NewInt(100),
 		sdk.NewInt(200),
 		10,
@@ -527,7 +626,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalStakingPoolSnapshot() {
 	// ----------------------------------------------------------------------------------------------------------------
 	// Update with lower height
 
-	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPool(
+	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPoolSnapshot(
 		sdk.NewInt(200),
 		sdk.NewInt(500),
 		9,
@@ -548,7 +647,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalStakingPoolSnapshot() {
 	// ----------------------------------------------------------------------------------------------------------------
 	// Update with same height
 
-	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPool(
+	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPoolSnapshot(
 		sdk.NewInt(500),
 		sdk.NewInt(1000),
 		10,
@@ -569,7 +668,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalStakingPoolSnapshot() {
 	// ----------------------------------------------------------------------------------------------------------------
 	// Update with higher height
 
-	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPool(
+	err = suite.database.SaveProposalStakingPoolSnapshot(types.NewProposalStakingPoolSnapshot(1, types.NewPoolSnapshot(
 		sdk.NewInt(1000),
 		sdk.NewInt(2000),
 		11,
@@ -613,7 +712,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator1.GetConsAddr(),
 			100,
-			int(stakingtypes.Bonded),
+			stakingtypes.Bonded,
 			false,
 			10,
 		),
@@ -621,7 +720,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator2.GetConsAddr(),
 			100,
-			int(stakingtypes.Unbonding),
+			stakingtypes.Unbonding,
 			true,
 			10,
 		),
@@ -662,7 +761,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator1.GetConsAddr(),
 			10,
-			int(stakingtypes.Bonded),
+			stakingtypes.Bonded,
 			true,
 			9,
 		),
@@ -670,7 +769,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator2.GetConsAddr(),
 			700,
-			int(stakingtypes.Unbonding),
+			stakingtypes.Unbonding,
 			true,
 			9,
 		),
@@ -711,7 +810,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator1.GetConsAddr(),
 			10,
-			int(stakingtypes.Bonded),
+			stakingtypes.Bonded,
 			true,
 			10,
 		),
@@ -719,7 +818,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator2.GetConsAddr(),
 			700,
-			int(stakingtypes.Unbonding),
+			stakingtypes.Unbonding,
 			true,
 			10,
 		),
@@ -760,7 +859,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator1.GetConsAddr(),
 			100000,
-			int(stakingtypes.Unspecified),
+			stakingtypes.Unspecified,
 			false,
 			11,
 		),
@@ -768,7 +867,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			1,
 			validator2.GetConsAddr(),
 			700000,
-			int(stakingtypes.Unbonded),
+			stakingtypes.Unbonded,
 			false,
 			11,
 		),
@@ -800,4 +899,133 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposalValidatorsStatusesSnapshot
 			11,
 		),
 	})
+}
+
+func (suite *DbTestSuite) TestBigDipperDb_SaveSoftwareUpgradePlan() {
+	_ = suite.getProposalRow(1)
+
+	// ----------------------------------------------------------------------------------------------------------------
+	// Save software upgrade plan at height 10 with upgrade height at 100
+	var plan = upgradetypes.Plan{
+		Name:   "name",
+		Height: 100,
+		Info:   "info",
+	}
+
+	err := suite.database.SaveSoftwareUpgradePlan(1, plan, 10)
+	suite.Require().NoError(err)
+
+	var rows []dbtypes.SoftwareUpgradePlanRow
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM software_upgrade_plan`)
+	suite.Require().NoError(err)
+	suite.Require().Len(rows, 1)
+	suite.Require().Equal(rows, []dbtypes.SoftwareUpgradePlanRow{
+		dbtypes.NewSoftwareUpgradePlanRow(1, plan.Name, plan.Height, plan.Info, 10),
+	})
+
+	// ----------------------------------------------------------------------------------------------------------------
+	// Update software upgrade plan with lower height
+	planEdit1 := upgradetypes.Plan{
+		Name:   "name_edit_1",
+		Height: 101,
+		Info:   "info_edit_1",
+	}
+
+	err = suite.database.SaveSoftwareUpgradePlan(1, planEdit1, 9)
+	suite.Require().NoError(err)
+
+	rows = []dbtypes.SoftwareUpgradePlanRow{}
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM software_upgrade_plan`)
+	suite.Require().NoError(err)
+	suite.Require().Len(rows, 1)
+	suite.Require().Equal(rows, []dbtypes.SoftwareUpgradePlanRow{
+		dbtypes.NewSoftwareUpgradePlanRow(1, plan.Name, plan.Height, plan.Info, 10),
+	})
+
+	// ----------------------------------------------------------------------------------------------------------------
+	// Update software upgrade plan with same height
+	planEdit2 := upgradetypes.Plan{
+		Name:   "name_edit_2",
+		Height: 102,
+		Info:   "info_edit_2",
+	}
+
+	err = suite.database.SaveSoftwareUpgradePlan(1, planEdit2, 10)
+	suite.Require().NoError(err)
+
+	rows = []dbtypes.SoftwareUpgradePlanRow{}
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM software_upgrade_plan`)
+	suite.Require().NoError(err)
+	suite.Require().Len(rows, 1)
+	suite.Require().Equal(rows, []dbtypes.SoftwareUpgradePlanRow{
+		dbtypes.NewSoftwareUpgradePlanRow(1, planEdit2.Name, planEdit2.Height, planEdit2.Info, 10),
+	})
+
+	// ----------------------------------------------------------------------------------------------------------------
+	// Update software upgrade plan with higher height
+	planEdit3 := upgradetypes.Plan{
+		Name:   "name_edit_3",
+		Height: 103,
+		Info:   "info_edit_3",
+	}
+
+	err = suite.database.SaveSoftwareUpgradePlan(1, planEdit3, 11)
+	suite.Require().NoError(err)
+
+	rows = []dbtypes.SoftwareUpgradePlanRow{}
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM software_upgrade_plan`)
+	suite.Require().NoError(err)
+	suite.Require().Len(rows, 1)
+	suite.Require().Equal(rows, []dbtypes.SoftwareUpgradePlanRow{
+		dbtypes.NewSoftwareUpgradePlanRow(1, planEdit3.Name, planEdit3.Height, planEdit3.Info, 11),
+	})
+}
+
+func (suite *DbTestSuite) TestBigDipperDb_DeleteSoftwareUpgradePlan() {
+	_ = suite.getProposalRow(1)
+
+	// Save software upgrade plan at height 10 with upgrade height at 100
+	var plan = upgradetypes.Plan{
+		Name:   "name",
+		Height: 100,
+		Info:   "info",
+	}
+
+	err := suite.database.SaveSoftwareUpgradePlan(1, plan, 10)
+	suite.Require().NoError(err)
+
+	// Delete software upgrade plan
+	err = suite.database.DeleteSoftwareUpgradePlan(1)
+	suite.Require().NoError(err)
+
+	var rows []dbtypes.SoftwareUpgradePlanRow
+	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM software_upgrade_plan`)
+	suite.Require().NoError(err)
+	suite.Require().Len(rows, 0)
+
+}
+
+func (suite *DbTestSuite) TestBigDipperDb_CheckSoftwareUpgradePlan() {
+	_ = suite.getProposalRow(1)
+
+	// Save software upgrade plan at height 10 with upgrade height at 100
+	var plan = upgradetypes.Plan{
+		Name: "name",
+		// the Height here is the upgrade height
+		Height: 100,
+		Info:   "info",
+	}
+
+	err := suite.database.SaveSoftwareUpgradePlan(1, plan, 10)
+	suite.Require().NoError(err)
+
+	// Check software upgrade plan at existing height
+	exist, err := suite.database.CheckSoftwareUpgradePlan(100)
+	suite.Require().NoError(err)
+	suite.Require().Equal(true, exist)
+
+	// Check software upgrade plan at non-existing height
+	exist, err = suite.database.CheckSoftwareUpgradePlan(11)
+	suite.Require().NoError(err)
+	suite.Require().Equal(false, exist)
 }
