@@ -24,6 +24,8 @@ select_permissions:
         - proposal_id
         - depositor_address
         - amount
+        # TODO: Upstream BDJuno made changes to gov; however gov module is not used yet on Nym fork.
+        # DB migrations need to ne done in the future
         #- timestamp
         - height
       filter: {}

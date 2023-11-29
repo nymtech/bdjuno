@@ -24,7 +24,7 @@ select_permissions:
         - proposal_id
         - voter_address
         - option
-        # TODO: Upstream BDJuno made changes to gov; however gov info is not indexed yet on Nym fork.
+        # TODO: Upstream BDJuno made changes to gov; however gov module is not used yet on Nym fork.
         # DB migrations need to ne done in the future
         #- weight
         #- timestamp
