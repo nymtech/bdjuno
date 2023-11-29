@@ -2,15 +2,21 @@ table:
   name: proposal_vote
   schema: public
 object_relationships:
-  - name: account
-    using:
-      foreign_key_constraint_on: voter_address
-  - name: block
-    using:
-      foreign_key_constraint_on: height
-  - name: proposal
-    using:
-      foreign_key_constraint_on: proposal_id
+- name: account
+  using:
+    foreign_key_constraint_on: voter_address
+- name: block
+  using:
+    manual_configuration:
+      column_mapping:
+        height: height
+      insertion_order: null
+      remote_table:
+        name: block
+        schema: public
+- name: proposal
+  using:
+    foreign_key_constraint_on: proposal_id
 select_permissions:
   - role: anonymous
     permission:
@@ -18,6 +24,8 @@ select_permissions:
         - proposal_id
         - voter_address
         - option
+        - weight
+        - timestamp
         - height
       filter: {}
       allow_aggregations: true
