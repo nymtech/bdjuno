@@ -1,8 +1,9 @@
 package types
 
 import (
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // Payload contains the payload data that is sent from Hasura
