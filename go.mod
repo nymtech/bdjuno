@@ -15,7 +15,7 @@ require (
 	github.com/invopop/jsonschema v0.12.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.9
-	github.com/ohler55/ojg v1.20.3
+	github.com/ohler55/ojg v1.21.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/prometheus/client_golang v1.17.0
 	github.com/proullon/ramsql v0.1.3
