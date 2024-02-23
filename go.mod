@@ -3,7 +3,7 @@ module github.com/forbole/bdjuno/v4
 go 1.20
 
 require (
-	cosmossdk.io/math v1.1.2
+	cosmossdk.io/math v1.3.0
 	cosmossdk.io/simapp v0.0.0-20230602123434-616841b9704d
 	github.com/CosmWasm/wasmd v0.43.0
 	github.com/cometbft/cometbft v0.37.2
@@ -334,7 +334,7 @@ require (
 	mvdan.cc/unparam v0.0.0-20221223090309-7455f1af531d // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 	pgregory.net/rapid v0.5.5 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
+	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
 // This is to avoid warnings while running the binary
