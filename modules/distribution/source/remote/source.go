@@ -5,7 +5,7 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/forbole/juno/v5/node/remote"
 
-	distrsource "github.com/forbole/bdjuno/v4/modules/distribution/source"
+	distrsource "github.com/forbole/callisto/v4/modules/distribution/source"
 )
 
 var (
@@ -18,7 +18,7 @@ type Source struct {
 	distrClient distrtypes.QueryClient
 }
 
-// NewSource returns a new Source instace
+// NewSource returns a new Source instance
 func NewSource(source *remote.Source, distrClient distrtypes.QueryClient) *Source {
 	return &Source{
 		Source:      source,

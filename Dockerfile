@@ -1,5 +1,5 @@
 FROM golang:1.19-bullseye AS builder
-WORKDIR /go/src/github.com/forbole/bdjuno
+WORKDIR /go/src/github.com/forbole/callisto
 COPY . ./
 RUN go mod download
 RUN make build
@@ -12,7 +12,7 @@ WORKDIR /root
 RUN apt-get update && apt-get install ca-certificates -y
 COPY --from=builder /deps.txt /root/deps.txt
 COPY --from=builder /go/pkg/mod/github.com/!cosm!wasm/wasmvm@v1.4.1/internal/api/libwasmvm.x86_64.so /root
-COPY --from=builder /go/src/github.com/forbole/bdjuno/build/bdjuno /root/bdjuno
+COPY --from=builder /go/src/github.com/forbole/callisto/build/bdjuno /root/bdjuno
 ENV LD_LIBRARY_PATH=/root
 CMD [ "bdjuno" ]
 

@@ -6,10 +6,9 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/forbole/callisto/v4/modules/actions/handlers"
+	actionstypes "github.com/forbole/callisto/v4/modules/actions/types"
 	"github.com/rs/zerolog/log"
-
-	"github.com/forbole/bdjuno/v4/modules/actions/handlers"
-	actionstypes "github.com/forbole/bdjuno/v4/modules/actions/types"
 )
 
 var (

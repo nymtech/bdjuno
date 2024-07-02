@@ -5,7 +5,7 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	wasmsource "github.com/forbole/bdjuno/v4/modules/wasm/source"
+	wasmsource "github.com/forbole/callisto/v4/modules/wasm/source"
 	"github.com/forbole/juno/v5/node/remote"
 )
 

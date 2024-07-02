@@ -7,10 +7,10 @@ import (
 	wasmapp "github.com/CosmWasm/wasmd/app"
 
 	"cosmossdk.io/simapp"
-	"cosmossdk.io/simapp/params"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/forbole/juno/v5/node/remote"
+	"github.com/forbole/juno/v5/types/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -24,26 +24,26 @@ import (
 
 	nodeconfig "github.com/forbole/juno/v5/node/config"
 
-	banksource "github.com/forbole/bdjuno/v4/modules/bank/source"
-	localbanksource "github.com/forbole/bdjuno/v4/modules/bank/source/local"
-	remotebanksource "github.com/forbole/bdjuno/v4/modules/bank/source/remote"
-	distrsource "github.com/forbole/bdjuno/v4/modules/distribution/source"
-	remotedistrsource "github.com/forbole/bdjuno/v4/modules/distribution/source/remote"
-	govsource "github.com/forbole/bdjuno/v4/modules/gov/source"
-	localgovsource "github.com/forbole/bdjuno/v4/modules/gov/source/local"
-	remotegovsource "github.com/forbole/bdjuno/v4/modules/gov/source/remote"
-	mintsource "github.com/forbole/bdjuno/v4/modules/mint/source"
-	localmintsource "github.com/forbole/bdjuno/v4/modules/mint/source/local"
-	remotemintsource "github.com/forbole/bdjuno/v4/modules/mint/source/remote"
-	slashingsource "github.com/forbole/bdjuno/v4/modules/slashing/source"
-	localslashingsource "github.com/forbole/bdjuno/v4/modules/slashing/source/local"
-	remoteslashingsource "github.com/forbole/bdjuno/v4/modules/slashing/source/remote"
-	stakingsource "github.com/forbole/bdjuno/v4/modules/staking/source"
-	localstakingsource "github.com/forbole/bdjuno/v4/modules/staking/source/local"
-	remotestakingsource "github.com/forbole/bdjuno/v4/modules/staking/source/remote"
-	wasmsource "github.com/forbole/bdjuno/v4/modules/wasm/source"
-	localwasmsource "github.com/forbole/bdjuno/v4/modules/wasm/source/local"
-	remotewasmsource "github.com/forbole/bdjuno/v4/modules/wasm/source/remote"
+	banksource "github.com/forbole/callisto/v4/modules/bank/source"
+	localbanksource "github.com/forbole/callisto/v4/modules/bank/source/local"
+	remotebanksource "github.com/forbole/callisto/v4/modules/bank/source/remote"
+	distrsource "github.com/forbole/callisto/v4/modules/distribution/source"
+	remotedistrsource "github.com/forbole/callisto/v4/modules/distribution/source/remote"
+	govsource "github.com/forbole/callisto/v4/modules/gov/source"
+	localgovsource "github.com/forbole/callisto/v4/modules/gov/source/local"
+	remotegovsource "github.com/forbole/callisto/v4/modules/gov/source/remote"
+	mintsource "github.com/forbole/callisto/v4/modules/mint/source"
+	localmintsource "github.com/forbole/callisto/v4/modules/mint/source/local"
+	remotemintsource "github.com/forbole/callisto/v4/modules/mint/source/remote"
+	slashingsource "github.com/forbole/callisto/v4/modules/slashing/source"
+	localslashingsource "github.com/forbole/callisto/v4/modules/slashing/source/local"
+	remoteslashingsource "github.com/forbole/callisto/v4/modules/slashing/source/remote"
+	stakingsource "github.com/forbole/callisto/v4/modules/staking/source"
+	localstakingsource "github.com/forbole/callisto/v4/modules/staking/source/local"
+	remotestakingsource "github.com/forbole/callisto/v4/modules/staking/source/remote"
+	wasmsource "github.com/forbole/callisto/v4/modules/wasm/source"
+	localwasmsource "github.com/forbole/callisto/v4/modules/wasm/source/local"
+	remotewasmsource "github.com/forbole/callisto/v4/modules/wasm/source/remote"
 )
 
 type Sources struct {
@@ -56,7 +56,7 @@ type Sources struct {
 	WasmSource     wasmsource.Source
 }
 
-func BuildSources(nodeCfg nodeconfig.Config, encodingConfig *params.EncodingConfig) (*Sources, error) {
+func BuildSources(nodeCfg nodeconfig.Config, encodingConfig params.EncodingConfig) (*Sources, error) {
 	switch cfg := nodeCfg.Details.(type) {
 	case *remote.Details:
 		return buildRemoteSources(cfg)
@@ -68,7 +68,7 @@ func BuildSources(nodeCfg nodeconfig.Config, encodingConfig *params.EncodingConf
 	}
 }
 
-func buildLocalSources(cfg *local.Details, encodingConfig *params.EncodingConfig) (*Sources, error) {
+func buildLocalSources(cfg *local.Details, encodingConfig params.EncodingConfig) (*Sources, error) {
 	source, err := local.NewSource(cfg.Home, encodingConfig)
 	if err != nil {
 		return nil, err

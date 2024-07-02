@@ -13,8 +13,8 @@ import (
 	authttypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
-	"github.com/forbole/bdjuno/v4/modules/utils"
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/modules/utils"
+	"github.com/forbole/callisto/v4/types"
 )
 
 // HandleMsgExec implements modules.AuthzMessageModule
@@ -24,7 +24,7 @@ func (m *Module) HandleMsgExec(index int, _ *authz.MsgExec, _ int, executedMsg s
 
 // HandleMsg implements modules.MessageModule
 func (m *Module) HandleMsg(_ int, msg sdk.Msg, tx *juno.Tx) error {
-	addresses, err := m.messagesParser(m.cdc, msg)
+	addresses, err := m.messagesParser(tx)
 	if err != nil {
 		log.Error().Str("module", "auth").Err(err).
 			Str("operation", "refresh account").

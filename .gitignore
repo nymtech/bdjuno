@@ -1,6 +1,7 @@
 .idea/
 build/
 pgdata
+vendor/
 
 # Configuration
 *.toml

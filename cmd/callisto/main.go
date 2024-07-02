@@ -8,17 +8,16 @@ import (
 	startcmd "github.com/forbole/juno/v5/cmd/start"
 	"github.com/forbole/juno/v5/modules/messages"
 
-	migratecmd "github.com/forbole/bdjuno/v4/cmd/migrate"
-	parsecmd "github.com/forbole/bdjuno/v4/cmd/parse"
+	migratecmd "github.com/forbole/callisto/v4/cmd/migrate"
+	parsecmd "github.com/forbole/callisto/v4/cmd/parse"
 
-	"github.com/forbole/bdjuno/v4/types/config"
+	"github.com/forbole/callisto/v4/types/config"
 
 	"cosmossdk.io/simapp"
 
-	"github.com/forbole/bdjuno/v4/database"
-	"github.com/forbole/bdjuno/v4/modules"
-
 	wasmapp "github.com/CosmWasm/wasmd/app"
+	"github.com/forbole/callisto/v4/database"
+	"github.com/forbole/callisto/v4/modules"
 )
 
 func main() {
@@ -30,7 +29,7 @@ func main() {
 		WithEncodingConfigBuilder(config.MakeEncodingConfig(getBasicManagers())).
 		WithRegistrar(modules.NewRegistrar(getAddressesParser()))
 
-	cfg := cmd.NewConfig("bdjuno").
+	cfg := cmd.NewConfig("callisto").
 		WithInitConfig(initCfg).
 		WithParseConfig(parseCfg)
 

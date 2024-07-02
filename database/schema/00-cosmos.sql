@@ -43,7 +43,7 @@ CREATE TABLE transaction
     success      BOOLEAN NOT NULL,
 
     /* Body */
-    messages     JSONB   NOT NULL DEFAULT '[]'::JSONB,
+    messages     JSON    NOT NULL DEFAULT '[]'::JSON,
     memo         TEXT,
     signatures   TEXT[]  NOT NULL,
 
@@ -66,12 +66,22 @@ CREATE INDEX transaction_hash_index ON transaction (hash);
 CREATE INDEX transaction_height_index ON transaction (height);
 CREATE INDEX transaction_partition_id_index ON transaction (partition_id);
 
+CREATE TABLE message_type
+(
+    type      TEXT   NOT NULL UNIQUE,
+    module    TEXT   NOT NULL,
+    label     TEXT   NOT NULL,
+    height    BIGINT NOT NULL
+);
+CREATE INDEX message_type_module_index ON message_type (module);
+CREATE INDEX message_type_type_index ON message_type (type);
+
 CREATE TABLE message
 (
     transaction_hash            TEXT   NOT NULL,
     index                       BIGINT NOT NULL,
-    type                        TEXT   NOT NULL,
-    value                       JSONB  NOT NULL,
+    type                        TEXT   NOT NULL REFERENCES message_type(type),
+    value                       JSON   NOT NULL,
     involved_accounts_addresses TEXT[] NOT NULL,
 
     /* PSQL partition */
@@ -99,6 +109,17 @@ SELECT * FROM message
 WHERE (cardinality(types) = 0 OR type = ANY (types))
   AND addresses && involved_accounts_addresses
 ORDER BY height DESC LIMIT "limit" OFFSET "offset"
+$$ LANGUAGE sql STABLE;
+
+CREATE FUNCTION messages_by_type(
+  types text [],
+  "limit" bigint DEFAULT 100,
+  "offset" bigint DEFAULT 0) 
+  RETURNS SETOF message AS 
+$$ 
+SELECT * FROM message
+WHERE (cardinality(types) = 0 OR type = ANY (types))
+ORDER BY height DESC LIMIT "limit" OFFSET "offset" 
 $$ LANGUAGE sql STABLE;
 
 CREATE TABLE pruning
