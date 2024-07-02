@@ -6,7 +6,7 @@ import (
 	dbtypes "github.com/forbole/callisto/v4/database/types"
 	dbutils "github.com/forbole/callisto/v4/database/utils"
 	"github.com/forbole/callisto/v4/types"
-	juno "github.com/forbole/juno/v5/types"
+	juno "github.com/forbole/juno/v6/types"
 	"github.com/lib/pq"
 )
 
@@ -201,7 +201,7 @@ VALUES `
 }
 
 // SaveWasmExecuteContractEvents allows to store the wasm contract events
-func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Tx) error {
+func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Transaction) error {
 	stmt := `
 INSERT INTO wasm_execute_contract_event_types 
 (contract_address,

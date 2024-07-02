@@ -1,21 +1,18 @@
 package main
 
 import (
-	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/forbole/juno/v5/cmd"
-	initcmd "github.com/forbole/juno/v5/cmd/init"
-	parsetypes "github.com/forbole/juno/v5/cmd/parse/types"
-	startcmd "github.com/forbole/juno/v5/cmd/start"
-	"github.com/forbole/juno/v5/modules/messages"
+	"github.com/forbole/juno/v6/cmd"
+	initcmd "github.com/forbole/juno/v6/cmd/init"
+	parsetypes "github.com/forbole/juno/v6/cmd/parse/types"
+	startcmd "github.com/forbole/juno/v6/cmd/start"
+	"github.com/forbole/juno/v6/modules/messages"
 
 	migratecmd "github.com/forbole/callisto/v4/cmd/migrate"
 	parsecmd "github.com/forbole/callisto/v4/cmd/parse"
+	"github.com/forbole/callisto/v4/utils"
 
 	"github.com/forbole/callisto/v4/types/config"
 
-	"cosmossdk.io/simapp"
-
-	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/forbole/callisto/v4/database"
 	"github.com/forbole/callisto/v4/modules"
 )
@@ -24,10 +21,10 @@ func main() {
 	initCfg := initcmd.NewConfig().
 		WithConfigCreator(config.Creator)
 
+	cdc := utils.GetCodec()
 	parseCfg := parsetypes.NewConfig().
-		WithDBBuilder(database.Builder).
-		WithEncodingConfigBuilder(config.MakeEncodingConfig(getBasicManagers())).
-		WithRegistrar(modules.NewRegistrar(getAddressesParser()))
+		WithDBBuilder(database.Builder(cdc)).
+		WithRegistrar(modules.NewRegistrar(getAddressesParser(), cdc))
 
 	cfg := cmd.NewConfig("callisto").
 		WithInitConfig(initCfg).
@@ -48,16 +45,6 @@ func main() {
 	err := executor.Execute()
 	if err != nil {
 		panic(err)
-	}
-}
-
-// getBasicManagers returns the various basic managers that are used to register the encoding to
-// support custom messages.
-// This should be edited by custom implementations if needed.
-func getBasicManagers() []module.BasicManager {
-	return []module.BasicManager{
-		simapp.ModuleBasics,
-		wasmapp.ModuleBasics,
 	}
 }
 

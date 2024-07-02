@@ -5,29 +5,33 @@ import (
 	"os"
 
 	wasmapp "github.com/CosmWasm/wasmd/app"
-
-	"cosmossdk.io/simapp"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/cometbft/cometbft/libs/log"
-	"github.com/forbole/juno/v5/node/remote"
-	"github.com/forbole/juno/v5/types/params"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/forbole/callisto/v4/utils/simapp"
+	"github.com/forbole/juno/v6/node/remote"
+
+	"cosmossdk.io/log"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/forbole/juno/v5/node/local"
+	"github.com/forbole/juno/v6/node/local"
 
-	nodeconfig "github.com/forbole/juno/v5/node/config"
+	nodeconfig "github.com/forbole/juno/v6/node/config"
 
 	banksource "github.com/forbole/callisto/v4/modules/bank/source"
 	localbanksource "github.com/forbole/callisto/v4/modules/bank/source/local"
 	remotebanksource "github.com/forbole/callisto/v4/modules/bank/source/remote"
 	distrsource "github.com/forbole/callisto/v4/modules/distribution/source"
+	localdistrsource "github.com/forbole/callisto/v4/modules/distribution/source/local"
 	remotedistrsource "github.com/forbole/callisto/v4/modules/distribution/source/remote"
 	govsource "github.com/forbole/callisto/v4/modules/gov/source"
 	localgovsource "github.com/forbole/callisto/v4/modules/gov/source/local"
@@ -56,27 +60,25 @@ type Sources struct {
 	WasmSource     wasmsource.Source
 }
 
-func BuildSources(nodeCfg nodeconfig.Config, encodingConfig params.EncodingConfig) (*Sources, error) {
+func BuildSources(nodeCfg nodeconfig.Config, cdc codec.Codec) (*Sources, error) {
 	switch cfg := nodeCfg.Details.(type) {
 	case *remote.Details:
 		return buildRemoteSources(cfg)
 	case *local.Details:
-		return buildLocalSources(cfg, encodingConfig)
+		return buildLocalSources(cfg, cdc)
 
 	default:
 		return nil, fmt.Errorf("invalid configuration type: %T", cfg)
 	}
 }
 
-func buildLocalSources(cfg *local.Details, encodingConfig params.EncodingConfig) (*Sources, error) {
-	source, err := local.NewSource(cfg.Home, encodingConfig)
+func buildLocalSources(cfg *local.Details, cdc codec.Codec) (*Sources, error) {
+	source, err := local.NewSource(cfg.Home, cdc)
 	if err != nil {
 		return nil, err
 	}
 
-	app := simapp.NewSimApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, nil, nil,
-	)
+	app := simapp.NewSimApp(cdc)
 
 	var emptyWasmOpts []wasmkeeper.Option
 	/*
@@ -86,13 +88,13 @@ func buildLocalSources(cfg *local.Details, encodingConfig params.EncodingConfig)
 		)
 	*/
 
-	wasmApp := wasmapp.NewWasmApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, nil, emptyWasmOpts, nil)
+	wasmApp := wasmapp.NewWasmApp(log.NewLogger(os.Stdout), source.StoreDB, nil, true, nil, emptyWasmOpts, nil)
 
 	sources := &Sources{
-		BankSource: localbanksource.NewSource(source, banktypes.QueryServer(app.BankKeeper)),
-		// DistrSource:    localdistrsource.NewSource(source, distrtypes.QueryServer(app.DistrKeeper)),
-		GovSource:      localgovsource.NewSource(source, govtypesv1.QueryServer(app.GovKeeper)),
-		MintSource:     localmintsource.NewSource(source, minttypes.QueryServer(app.MintKeeper)),
+		BankSource:     localbanksource.NewSource(source, banktypes.QueryServer(app.BankKeeper)),
+		DistrSource:    localdistrsource.NewSource(source, distrkeeper.NewQuerier(app.DistrKeeper)),
+		GovSource:      localgovsource.NewSource(source, govkeeper.NewQueryServer(&app.GovKeeper)),
+		MintSource:     localmintsource.NewSource(source, mintkeeper.NewQueryServerImpl(app.MintKeeper)),
 		SlashingSource: localslashingsource.NewSource(source, slashingtypes.QueryServer(app.SlashingKeeper)),
 		StakingSource:  localstakingsource.NewSource(source, stakingkeeper.Querier{Keeper: app.StakingKeeper}),
 		WasmSource:     localwasmsource.NewSource(source, wasmkeeper.Querier(&wasmApp.WasmKeeper)),
@@ -100,16 +102,6 @@ func buildLocalSources(cfg *local.Details, encodingConfig params.EncodingConfig)
 
 	// Mount and initialize the stores
 	err = source.MountKVStores(app, "keys")
-	if err != nil {
-		return nil, err
-	}
-
-	err = source.MountTransientStores(app, "tkeys")
-	if err != nil {
-		return nil, err
-	}
-
-	err = source.MountMemoryStores(app, "memKeys")
 	if err != nil {
 		return nil, err
 	}
