@@ -1,4 +1,4 @@
-name: Build and Push to DockerHub
+name: Build and Push to DockerHub - Mainnet
 
 on:
   workflow_dispatch:
