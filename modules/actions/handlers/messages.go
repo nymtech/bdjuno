@@ -29,23 +29,24 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 		Str("location", "before").
 		Msg(message)
 
-	limit := uint64(10)
+	var limit uint64
 	offset := uint64(0)
 
 	executedAtStart := payload.Input.ExecutedAtStart
 	executedAtEnd := payload.Input.ExecutedAtEnd
 
-	startHeight := int64(-1)
+	var startHeight int64
 	endHeight := int64(-1)
 
 	valueStart, err := ctx.Db.GetBlockHeightTime(executedAtStart)
 	if err != nil {
 		valueFirst, err := ctx.Db.GetFirstBlockTime()
+
 		if err != nil {
 			return nil, err
-		} else {
-			startHeight = valueFirst.Height
 		}
+
+		startHeight = valueFirst.Height
 	} else {
 		startHeight = valueStart.Height
 	}
@@ -55,9 +56,8 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 		valueLast, err := ctx.Db.GetLastBlockTime()
 		if err != nil {
 			return nil, err
-		} else {
-			startHeight = valueLast.Height
 		}
+		startHeight = valueLast.Height
 	} else {
 		endHeight = valueEnd.Height
 	}
