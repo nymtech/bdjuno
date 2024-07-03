@@ -203,25 +203,41 @@ VALUES `
 // SaveWasmExecuteContractEvents allows to store the wasm contract events
 func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteContract, tx *juno.Transaction) error {
 	stmt := `
-INSERT INTO wasm_execute_contract_event_types 
-(contract_address,
-event_type,
-first_seen_height,
-first_seen_hash,
-last_seen_height,
-last_seen_hash) 
-VALUES ($1, $2, $3, $4, $3, $4)
-ON CONFLICT (contract_address, event_type) DO UPDATE
-SET (last_seen_height, last_seen_hash) = (EXCLUDED.last_seen_height, EXCLUDED.last_seen_hash);
-`
+	INSERT INTO wasm_execute_contract_event_types
+	(contract_address,
+	event_type,
+	first_seen_height,
+	first_seen_hash,
+	last_seen_height,
+	last_seen_hash)
+	VALUES ($1, $2, $3, $4, $3, $4)
+	ON CONFLICT (contract_address, event_type) DO UPDATE
+	SET (last_seen_height, last_seen_hash) = (EXCLUDED.last_seen_height, EXCLUDED.last_seen_hash);
+	`
+	// If the logs are present, we are using pre-0.50
+	// Log parsing is still needed because events don't have a msg_index SDK <0.50
+	// and ignoring that will index a lot of unwanted values and bloat DB
+	if len(tx.Logs) > 0 {
+		for _, txLog := range tx.Logs {
+			for _, event := range txLog.Events {
 
-	for _, txLog := range tx.Logs {
-		for _, event := range txLog.Events {
+				_, err := db.SQL.Exec(stmt, executeContract.ContractAddress, event.Type, executeContract.Height, tx.TxHash)
+				if err != nil {
+					return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+				}
+			}
+		}
+	} else {
 
-			_, err := db.SQL.Exec(stmt, executeContract.ContractAddress, event.Type,
-				executeContract.Height, tx.TxHash)
-			if err != nil {
-				return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+		// We fall back to events for the newer version of SDK and look for events with msg_index set
+		for _, event := range tx.Events {
+			for _, attr := range event.Attributes {
+				if attr.Key == "msg_index" {
+					_, err := db.SQL.Exec(stmt, executeContract.ContractAddress, event.Type, executeContract.Height, tx.TxHash)
+					if err != nil {
+						return fmt.Errorf("error while saving wasm execute contracts: %s", err)
+					}
+				}
 			}
 		}
 	}
