@@ -1,5 +1,5 @@
 # Use the same architecture for the builder and the final image
-FROM golang:1.21-bullseye AS builder
+FROM golang:1.23.5-bullseye AS builder
 
 RUN apt update && apt install make git -y
 WORKDIR /callisto
