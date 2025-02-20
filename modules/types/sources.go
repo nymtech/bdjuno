@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	sdklog "cosmossdk.io/log"
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/forbole/callisto/v4/utils/simapp"
 	"github.com/forbole/juno/v6/node/remote"
-
-	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -48,6 +46,7 @@ import (
 	wasmsource "github.com/forbole/callisto/v4/modules/wasm/source"
 	localwasmsource "github.com/forbole/callisto/v4/modules/wasm/source/local"
 	remotewasmsource "github.com/forbole/callisto/v4/modules/wasm/source/remote"
+	"github.com/forbole/callisto/v4/utils/simapp"
 )
 
 type Sources struct {
@@ -81,14 +80,7 @@ func buildLocalSources(cfg *local.Details, cdc codec.Codec) (*Sources, error) {
 	app := simapp.NewSimApp(cdc)
 
 	var emptyWasmOpts []wasmkeeper.Option
-	/*
-		wasmApp := wasmapp.NewWasmApp(
-			log.NewTMLogger(log.NewSyncWriter(os.Stdout)), source.StoreDB, nil, true, map[int64]bool{},
-			cfg.Home, 0, emptyWasmOpts, nil,
-		)
-	*/
-
-	wasmApp := wasmapp.NewWasmApp(log.NewLogger(os.Stdout), source.StoreDB, nil, true, nil, emptyWasmOpts, nil)
+	wasmApp := wasmapp.NewWasmApp(sdklog.NewLogger(os.Stdout), source.StoreDB, nil, true, nil, emptyWasmOpts, nil)
 
 	sources := &Sources{
 		BankSource:     localbanksource.NewSource(source, banktypes.QueryServer(app.BankKeeper)),

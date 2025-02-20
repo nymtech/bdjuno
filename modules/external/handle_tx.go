@@ -12,7 +12,7 @@ import (
 func (m *Module) HandleTx(tx *juno.Transaction) error {
 	log.Info().Str("txhash", tx.TxHash).Msg("✅✅✅✅ external HandleTx")
 
-	txResponseJSON, err := m.cdc.MarshalJSON(tx.TxResponse)
+	txResponseJSON, err := m.cdc.MarshalJSON(tx.Tx)
 	if err != nil {
 		log.Err(err).Msg("Could no encode transaction response as json")
 	}

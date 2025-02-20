@@ -116,7 +116,6 @@ func (db *Db) GetValidatorOperatorAddress(consAddr string) (sdk.ValAddress, erro
 	}
 
 	return sdk.ValAddressFromBech32(result[0])
-
 }
 
 // GetValidator returns the validator having the given address.
@@ -167,7 +166,7 @@ ORDER BY validator.consensus_address`
 		return nil, err
 	}
 
-	var data = make([]types.Validator, len(rows))
+	data := make([]types.Validator, len(rows))
 	for index, row := range rows {
 		data[index] = row
 	}
@@ -219,7 +218,7 @@ func (db *Db) SaveValidatorDescription(description types.ValidatorDescription) e
 	}
 
 	// Update the existing description with this one, if one is already present
-	var avatarURL = description.AvatarURL
+	avatarURL := description.AvatarURL
 	if existing, found := db.getValidatorDescription(consAddr); found {
 		des, err = existing.Description.UpdateDescription(des)
 		if err != nil {

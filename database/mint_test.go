@@ -12,7 +12,6 @@ import (
 )
 
 func (suite *DbTestSuite) TestBigDipperDb_SaveInflation() {
-
 	// Save the data
 	err := suite.database.SaveInflation(math.LegacyNewDecWithPrec(10050, 2), 100)
 	suite.Require().NoError(err)

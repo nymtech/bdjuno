@@ -11,9 +11,7 @@ import (
 	stakingsource "github.com/forbole/callisto/v4/modules/staking/source"
 )
 
-var (
-	_ stakingsource.Source = &Source{}
-)
+var _ stakingsource.Source = &Source{}
 
 // Source implements stakingsource.Source using a local node
 type Source struct {
@@ -93,7 +91,7 @@ func (s Source) GetValidatorsWithStatus(height int64, status string) ([]stakingt
 
 	var validators []stakingtypes.Validator
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.q.Validators(
 			sdk.WrapSDKContext(ctx),
@@ -155,7 +153,6 @@ func (s Source) GetParams(height int64) (stakingtypes.Params, error) {
 
 // GetUnbondingDelegations implements stakingsource.Source
 func (s Source) GetUnbondingDelegations(height int64, delegator string, pagination *query.PageRequest) (*stakingtypes.QueryDelegatorUnbondingDelegationsResponse, error) {
-
 	ctx, err := s.LoadHeight(height)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading height: %s", err)
@@ -177,7 +174,6 @@ func (s Source) GetUnbondingDelegations(height int64, delegator string, paginati
 	}
 
 	return unbondingDelegations, nil
-
 }
 
 // GetValidatorDelegationsWithPagination implements stakingsource.Source

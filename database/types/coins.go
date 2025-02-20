@@ -141,7 +141,7 @@ func (coins *DbCoins) Scan(src interface{}) error {
 
 // ToCoins converts this DbCoins to sdk.Coins
 func (coins DbCoins) ToCoins() sdk.Coins {
-	var sdkCoins = make([]sdk.Coin, len(coins))
+	sdkCoins := make([]sdk.Coin, len(coins))
 	for index := range coins {
 		sdkCoins[index] = coins[index].ToCoin()
 	}
@@ -253,7 +253,7 @@ func (coins *DbDecCoins) Scan(src interface{}) error {
 
 // ToDecCoins converts this DbDecCoins to sdk.DecCoins
 func (coins DbDecCoins) ToDecCoins() sdk.DecCoins {
-	var sdkCoins = make([]sdk.DecCoin, len(coins))
+	sdkCoins := make([]sdk.DecCoin, len(coins))
 	for index := range coins {
 		sdkCoins[index] = coins[index].ToDecCoin()
 	}

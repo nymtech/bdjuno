@@ -10,9 +10,7 @@ import (
 	govsource "github.com/forbole/callisto/v4/modules/gov/source"
 )
 
-var (
-	_ govsource.Source = &Source{}
-)
+var _ govsource.Source = &Source{}
 
 // Source implements govsource.Source by using a local node
 type Source struct {

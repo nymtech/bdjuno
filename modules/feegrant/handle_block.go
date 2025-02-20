@@ -18,7 +18,6 @@ import (
 func (m *Module) HandleBlock(
 	block *tmctypes.ResultBlock, res *tmctypes.ResultBlockResults, _ []*juno.Transaction, _ *tmctypes.ResultValidators,
 ) error {
-
 	// Remove expired fee grant allowances
 	err := m.removeExpiredFeeGrantAllowances(block.Block.Height, res.FinalizeBlockEvents)
 	if err != nil {
@@ -46,9 +45,7 @@ func (m *Module) removeExpiredFeeGrantAllowances(height int64, events []abci.Eve
 		err = m.db.DeleteFeeGrantAllowance(types.NewGrantRemoval(granteeAddress.Value, granterAddress.Value, height))
 		if err != nil {
 			return fmt.Errorf("error while deleting fee grant allowance: %s", err)
-
 		}
 	}
 	return nil
-
 }

@@ -19,5 +19,4 @@ func (m *Module) UpdateParams(height int64) error {
 	}
 
 	return m.db.SaveMintParams(types.NewMintParams(params, height))
-
 }

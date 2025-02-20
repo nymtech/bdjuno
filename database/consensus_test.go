@@ -307,7 +307,7 @@ func (suite *DbTestSuite) TestSaveConsensus_SaveAverageBlockTimeGenesis() {
 func (suite *DbTestSuite) TestSaveConsensus_SaveGenesisData() {
 	err := suite.database.SaveGenesis(types.NewGenesis(
 		"testnet-1",
-		time.Date(2020, 1, 02, 15, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 0o2, 15, 0o0, 0o0, 0o00, time.UTC),
 		0,
 	))
 	suite.Require().NoError(err)
@@ -315,7 +315,7 @@ func (suite *DbTestSuite) TestSaveConsensus_SaveGenesisData() {
 	// Should have only one row
 	err = suite.database.SaveGenesis(types.NewGenesis(
 		"testnet-2",
-		time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 1, 15, 0o0, 0o0, 0o00, time.UTC),
 		0,
 	))
 
@@ -324,7 +324,7 @@ func (suite *DbTestSuite) TestSaveConsensus_SaveGenesisData() {
 	suite.Require().Len(rows, 1)
 	suite.Require().True(rows[0].Equal(dbtypes.NewGenesisRow(
 		"testnet-2",
-		time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 1, 15, 0o0, 0o0, 0o00, time.UTC),
 		0,
 	)))
 }
@@ -333,7 +333,7 @@ func (suite *DbTestSuite) TestSaveConsensus_GetGenesis() {
 	_, err := suite.database.Sqlx.Exec(
 		`INSERT INTO genesis(chain_id, time, initial_height) VALUES ($1, $2, $3)`,
 		"testnet-1",
-		time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 1, 15, 0o0, 0o0, 0o00, time.UTC),
 		0,
 	)
 
@@ -341,7 +341,7 @@ func (suite *DbTestSuite) TestSaveConsensus_GetGenesis() {
 	suite.Require().NoError(err)
 	suite.Require().True(genesis.Equal(types.NewGenesis(
 		"testnet-1",
-		time.Date(2020, 1, 1, 15, 00, 00, 000, time.UTC),
+		time.Date(2020, 1, 1, 15, 0o0, 0o0, 0o00, time.UTC),
 		0,
 	)))
 }

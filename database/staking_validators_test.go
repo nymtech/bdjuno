@@ -240,7 +240,6 @@ VALUES ('cosmosvalcons1qqqqrezrl53hujmpdch6d805ac75n220ku09rl',
 	suite.Require().Equal("cosmos184ma3twcfjqef6k95ne8w2hk80x2kah7vcwy4a", validator.GetSelfDelegateAddress())
 	suite.Require().True(validator.GetMaxChangeRate().Equal(maxChangeRate))
 	suite.Require().True(validator.GetMaxRate().Equal(maxRate))
-
 }
 
 func (suite *DbTestSuite) TestGetValidators() {

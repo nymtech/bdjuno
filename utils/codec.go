@@ -32,8 +32,10 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 )
 
-var once sync.Once
-var cdc *codec.ProtoCodec
+var (
+	once sync.Once
+	cdc  *codec.ProtoCodec
+)
 
 func GetCodec() codec.Codec {
 	once.Do(func() {

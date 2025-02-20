@@ -15,5 +15,4 @@ func (suite *DbTestSuite) TestBigDipperDb_InsertEnableModules() {
 
 	expected := types.NewModuleRows(modules)
 	suite.Require().True(results.Equal(&expected))
-
 }

@@ -39,7 +39,7 @@ func GetAccounts(height int64, addresses []string) []types.Account {
 	log.Debug().Str("module", "auth").Str("operation", "accounts").Msg("getting accounts data")
 
 	// Get all the accounts information
-	var accounts = make([]types.Account, len(addresses))
+	accounts := make([]types.Account, len(addresses))
 	for index, address := range addresses {
 		accounts[index] = types.NewAccount(address)
 	}

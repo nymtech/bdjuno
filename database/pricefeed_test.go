@@ -29,7 +29,7 @@ func (suite *DbTestSuite) Test_GetTokensPriceID() {
 	units, err := suite.database.GetTokensPriceID()
 	suite.Require().NoError(err)
 
-	var expected = []string{"udesmos", "mdesmos", "desmos", "udaric", "mdaric", "daric"}
+	expected := []string{"udesmos", "mdesmos", "desmos", "udaric", "mdaric", "daric"}
 
 	suite.Require().Len(units, len(expected))
 	for _, name := range expected {
@@ -47,13 +47,13 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPrice() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			200.01,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 	}
 	err := suite.database.SaveTokensPrices(tickers)
@@ -65,13 +65,13 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPrice() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			200.01,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 	}
 
@@ -88,13 +88,13 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPrice() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 05, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o5, 0o0, 0o00, time.UTC),
 		),
 	}
 	err = suite.database.SaveTokensPrices(tickers)
@@ -106,13 +106,13 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPrice() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 05, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o5, 0o0, 0o00, time.UTC),
 		),
 	}
 
@@ -134,25 +134,25 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPriceHistory() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"desmos",
 			200.01,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 	}
 	err := suite.database.SaveTokenPricesHistory(tickers)
@@ -164,25 +164,25 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPriceHistory() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"desmos",
 			200.01,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 	}
 
@@ -200,25 +200,25 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPriceHistory() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"desmos",
 			300.01,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		types.NewTokenPrice(
 			"atom",
 			10,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 	}
 	err = suite.database.SaveTokenPricesHistory(tickers)
@@ -230,26 +230,26 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveTokenPriceHistory() {
 			"desmos",
 			100.01,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			1,
 			20,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 		),
 		dbtypes.NewTokenPriceRow(
 			"desmos",
 			300.01,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 
 		dbtypes.NewTokenPriceRow(
 			"atom",
 			10,
 			20,
-			time.Date(2020, 10, 10, 15, 02, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o2, 0o0, 0o00, time.UTC),
 		),
 	}
 

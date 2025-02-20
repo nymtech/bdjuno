@@ -11,7 +11,6 @@ import (
 
 // GetAccountBalances implements bankkeeper.Source
 func (s Source) GetAccountBalance(address string, height int64) ([]sdk.Coin, error) {
-
 	// Get account balance at certain height
 	ctx := utils.GetHeightRequestContext(s.Ctx, height)
 	balRes, err := s.bankClient.AllBalances(ctx, &banktypes.QueryAllBalancesRequest{Address: address})
