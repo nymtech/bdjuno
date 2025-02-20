@@ -12,8 +12,9 @@ FROM debian:bullseye
 WORKDIR /root
 RUN apt-get update && apt-get install ca-certificates -y
 
-COPY --from=builder /go/pkg/mod/github.com/!cosm!wasm/wasmvm/v2@v2.0.0/internal/api/libwasmvm.* /root
+COPY --from=builder /go/pkg/mod/github.com/!cosm!wasm/wasmvm/v2@v2.2.1/internal/api/libwasmvm.* /root/
 COPY --from=builder /callisto/build/callisto /root/callisto
 
-ENV LD_LIBRARY_PATH=/root:$LD_LIBRARY_PATH
+# Set LD_LIBRARY_PATH without referencing undefined variable
+ENV LD_LIBRARY_PATH=/root
 CMD ["./callisto"]
