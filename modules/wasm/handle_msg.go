@@ -14,48 +14,51 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/forbole/callisto/v4/types"
+	"github.com/forbole/callisto/v4/utils"
 	juno "github.com/forbole/juno/v6/types"
 )
 
-// HandleMsg implements modules.MessageModule
-func (m *Module) HandleMsg(index int, msg sdk.Msg, tx *juno.Transaction) error {
-	log.Trace().Str("txhash", tx.TxHash).Msg("wasm HandleMsg")
+var msgFilter = map[string]bool{
+	"/cosmwasm.wasm.v1.MsgStoreCode":           true,
+	"/cosmwasm.wasm.v1.MsgInstantiateContract": true,
+	"/cosmwasm.wasm.v1.MsgExecuteContract":     true,
+	"/cosmwasm.wasm.v1.MsgMigrateContract":     true,
+	"/cosmwasm.wasm.v1.MsgUpdateAdmin":         true,
+	"/cosmwasm.wasm.v1.MsgClearAdmin":          true,
+}
 
-	if len(tx.Body.Messages) == 0 {
+// HandleMsg implements modules.MessageModule
+func (m *Module) HandleMsg(index int, msg juno.Message, tx *juno.Transaction) error {
+	if _, ok := msgFilter[msg.GetType()]; !ok {
 		return nil
 	}
 
-	switch cosmosMsg := msg.(type) {
-	case *wasmtypes.MsgStoreCode:
-		err := m.HandleMsgStoreCode(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgStoreCode: %s", err)
-		}
-	case *wasmtypes.MsgInstantiateContract:
-		err := m.HandleMsgInstantiateContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgInstantiateContract: %s", err)
-		}
-	case *wasmtypes.MsgExecuteContract:
-		err := m.HandleMsgExecuteContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgExecuteContract: %s", err)
-		}
-	case *wasmtypes.MsgMigrateContract:
-		err := m.HandleMsgMigrateContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgMigrateContract: %s", err)
-		}
-	case *wasmtypes.MsgUpdateAdmin:
-		err := m.HandleMsgUpdateAdmin(cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgUpdateAdmin: %s", err)
-		}
-	case *wasmtypes.MsgClearAdmin:
-		err := m.HandleMsgClearAdmin(cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgClearAdmin: %s", err)
-		}
+	log.Debug().Str("module", "wasm").Str("hash", tx.TxHash).Uint64("height", tx.Height).Msg(fmt.Sprintf("handling wasm message %s", msg.GetType()))
+
+	switch msg.GetType() {
+	case "/cosmwasm.wasm.v1.MsgStoreCode":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgStoreCode{})
+		return m.HandleMsgStoreCode(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgInstantiateContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgInstantiateContract{})
+		return m.HandleMsgInstantiateContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgExecuteContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgExecuteContract{})
+		return m.HandleMsgExecuteContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgMigrateContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgMigrateContract{})
+		return m.HandleMsgMigrateContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgUpdateAdmin":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgUpdateAdmin{})
+		return m.HandleMsgUpdateAdmin(cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgClearAdmin":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgClearAdmin{})
+		return m.HandleMsgClearAdmin(cosmosMsg)
 	}
 
 	return nil
@@ -214,7 +217,7 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Transaction, msg *
 		// Check if there is a record of the contract, otherwise look it up
 		contractInfo, err := m.source.GetContractInfo(int64(tx.Height), contractAddress)
 		if err != nil {
-			log.Trace().Str("contractAddress", contractAddress).Int64("height", tx.Height).Msg("Unable to get contract info, using default values...")
+			log.Trace().Str("contractAddress", contractAddress).Int64("height", int64(tx.Height)).Msg("Unable to get contract info, using default values...")
 		} else {
 			contractInfoCreator = contractInfo.Creator
 			contractInfoAdmin = contractInfo.Admin
@@ -288,7 +291,7 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Transaction, msg *
 
 	execute := types.NewWasmExecuteContract(
 		msg.Sender, msg.Contract, msg.Msg, msg.Funds,
-		string(resultDataBz), timestamp, tx.Height, tx.TxHash,
+		string(resultDataBz), timestamp, int64(tx.Height), tx.TxHash,
 	)
 
 	// save a record of the raw contract execution details
