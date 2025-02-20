@@ -52,7 +52,7 @@ func NewModule(cfg config.Config, cdc codec.Codec, registry codectypes.Interface
 	schema := jsonschema.Reflect(&sdk.TxResponse{})
 	// schema := jsonschema.ReflectFromType(sdk.TxResponse)
 	json, _ := schema.MarshalJSON()
-	os.WriteFile("schema.json", json, 0600)
+	os.WriteFile("schema.json", json, 0o600)
 	log.Info().Msg("Wrote `schema.json` with Cosmos transaction types")
 
 	return &Module{

@@ -9,9 +9,7 @@ import (
 	"github.com/forbole/juno/v6/node/remote"
 )
 
-var (
-	_ wasmsource.Source = &Source{}
-)
+var _ wasmsource.Source = &Source{}
 
 // Source implements wasmsource.Source using a remote node
 type Source struct {
@@ -44,10 +42,9 @@ func (s Source) GetContractInfo(height int64, contractAddr string) (*wasmtypes.Q
 
 // GetContractStates implements wasmsource.Source
 func (s Source) GetContractStates(height int64, contractAddr string) ([]wasmtypes.Model, error) {
-
 	var models []wasmtypes.Model
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.wasmClient.AllContractState(
 			remote.GetHeightRequestContext(s.Ctx, height),

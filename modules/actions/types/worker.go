@@ -102,7 +102,6 @@ func (w *ActionsWorker) Start(host string, port uint) {
 	}
 
 	err := server.ListenAndServe()
-
 	if err != nil {
 		panic(err)
 	}

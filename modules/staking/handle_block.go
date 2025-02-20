@@ -71,5 +71,4 @@ func (m *Module) updateDoubleSignEvidence(height int64, evidenceList tmtypes.Evi
 			Msg("error while saving double sign evidence")
 		return
 	}
-
 }

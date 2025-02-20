@@ -8,9 +8,7 @@ import (
 	distrsource "github.com/forbole/callisto/v4/modules/distribution/source"
 )
 
-var (
-	_ distrsource.Source = &Source{}
-)
+var _ distrsource.Source = &Source{}
 
 // Source implements distrsource.Source querying the data from a remote node
 type Source struct {

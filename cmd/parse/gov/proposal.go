@@ -126,7 +126,6 @@ func refreshProposalDetails(parseCtx *parser.Context, proposalID uint64, govModu
 
 	// Handle the MsgSubmitProposal messages
 	for index, msg := range tx.GetMsgs() {
-
 		switch msg.(type) {
 		case *govtypesv1.MsgSubmitProposal, *govtypesv1beta1.MsgSubmitProposal:
 			err = govModule.HandleMsg(index, tx.Body.Messages[index], tx)

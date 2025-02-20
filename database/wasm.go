@@ -97,7 +97,6 @@ func (db *Db) SaveWasmContracts(contracts []types.WasmContract) error {
 }
 
 func (db *Db) saveWasmContracts(paramsNumber int, wasmContracts []types.WasmContract) error {
-
 	stmt := `
 INSERT INTO wasm_contract 
 (sender, creator, admin, code_id, label, raw_contract_message, funds, contract_address, 
@@ -232,7 +231,6 @@ SET (last_seen_height, last_seen_hash) = (EXCLUDED.last_seen_height, EXCLUDED.la
 func (db *Db) UpdateContractWithMsgMigrateContract(
 	sender string, contractAddress string, codeID uint64, rawContractMsg []byte, data string,
 ) error {
-
 	stmt := `UPDATE wasm_contract SET 
 sender = $1, code_id = $2, raw_contract_message = $3, data = $4 
 WHERE contract_address = $5 `
@@ -243,13 +241,11 @@ WHERE contract_address = $5 `
 	)
 	if err != nil {
 		return fmt.Errorf("error while updating wasm contract from contract migration: %s", err)
-
 	}
 	return nil
 }
 
 func (db *Db) UpdateContractAdmin(sender string, contractAddress string, newAdmin string) error {
-
 	stmt := `UPDATE wasm_contract SET 
 sender = $1, admin = $2 WHERE contract_address = $2 `
 

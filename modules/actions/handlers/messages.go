@@ -95,7 +95,6 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 }
 
 func MessagesHandler(ctx *types.Context, payload *types.Payload) (interface{}, error) {
-
 	params, err := ValidateMessageParams(ctx, payload, "message handler")
 	if err != nil {
 		return nil, err

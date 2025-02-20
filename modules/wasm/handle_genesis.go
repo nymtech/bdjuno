@@ -61,7 +61,7 @@ func (m *Module) SaveGenesisCodes(codes []wasmtypes.Code, initHeight int64) erro
 	log.Debug().Str("module", "wasm").Str("operation", "genesis codes").
 		Int("code counts", len(codes)).Msg("parsing genesis")
 
-	var wasmCodes = []types.WasmCode{}
+	wasmCodes := []types.WasmCode{}
 	for _, code := range codes {
 		if code.CodeID != 0 {
 			wasmCodes = append(wasmCodes, types.NewWasmCode(

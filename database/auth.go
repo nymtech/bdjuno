@@ -112,7 +112,6 @@ func (db *Db) storeVestingAccount(account exported.VestingAccount) (int, error) 
 		time.Unix(account.GetEndTime(), 0),
 		time.Unix(account.GetStartTime(), 0),
 	).Scan(&vestingAccountRowID)
-
 	if err != nil {
 		return vestingAccountRowID, fmt.Errorf("error while saving Vesting Account of type %v: %s", proto.MessageName(account), err)
 	}

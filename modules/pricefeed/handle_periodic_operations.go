@@ -75,7 +75,6 @@ func (m *Module) UpdatePrice() error {
 	}
 
 	return nil
-
 }
 
 // UpdatePricesHistory fetches total amount of coins in the system from RPC

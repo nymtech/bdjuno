@@ -21,7 +21,6 @@ func (db *Migrator) Migrate() error {
 			utils.GetModuleNameFromTypeURL(msgType.Type),
 			utils.GetMsgFromTypeURL(msgType.Type),
 			msgType.Height))
-
 		if err != nil {
 			return err
 		}

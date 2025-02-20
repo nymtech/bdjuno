@@ -12,9 +12,7 @@ import (
 	"github.com/forbole/callisto/v4/types"
 )
 
-var (
-	_ bankkeeper.Source = &Source{}
-)
+var _ bankkeeper.Source = &Source{}
 
 type Source struct {
 	*remote.Source
@@ -56,7 +54,7 @@ func (s Source) GetSupply(height int64) (sdk.Coins, error) {
 
 	var coins []sdk.Coin
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.bankClient.TotalSupply(
 			ctx,

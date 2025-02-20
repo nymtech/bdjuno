@@ -11,9 +11,7 @@ import (
 	wasmsource "github.com/forbole/callisto/v4/modules/wasm/source"
 )
 
-var (
-	_ wasmsource.Source = &Source{}
-)
+var _ wasmsource.Source = &Source{}
 
 // Source implements wasmsource.Source using a local node
 type Source struct {
@@ -58,7 +56,7 @@ func (s Source) GetContractStates(height int64, contractAddr string) ([]wasmtype
 
 	var models []wasmtypes.Model
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.q.AllContractState(
 			sdk.WrapSDKContext(ctx),

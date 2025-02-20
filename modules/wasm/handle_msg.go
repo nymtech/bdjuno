@@ -260,12 +260,14 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Transaction, msg *
 		//}
 
 		err = m.db.SaveAccounts([]types.Account{
-			types.NewAccount(msg.Sender)})
+			types.NewAccount(msg.Sender),
+		})
 		if err != nil {
 			log.Debug().Msg(fmt.Errorf("error while saving Sender account %s: %s", msg.Sender, err).Error())
 		}
 		err = m.db.SaveAccounts([]types.Account{
-			types.NewAccount(contractInfoAdmin)})
+			types.NewAccount(contractInfoAdmin),
+		})
 		if err != nil {
 			log.Debug().Msg(fmt.Errorf("error while saving Admin account %s: %s", contractInfo.Admin, err).Error())
 		}

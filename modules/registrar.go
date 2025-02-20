@@ -52,9 +52,7 @@ func UniqueAddressesParser(parser messages.MessageAddressesParser) messages.Mess
 
 // --------------------------------------------------------------------------------------------------------------------
 
-var (
-	_ registrar.Registrar = &Registrar{}
-)
+var _ registrar.Registrar = &Registrar{}
 
 // Registrar represents the modules.Registrar that allows to register all modules that are supported by BigDipper
 type Registrar struct {

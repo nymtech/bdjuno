@@ -344,7 +344,6 @@ WHERE proposal_staking_pool_snapshot.height <= excluded.height`
 	_, err := db.SQL.Exec(stmt,
 		snapshot.ProposalID, snapshot.Pool.BondedTokens.String(),
 		snapshot.Pool.NotBondedTokens.String(), snapshot.Pool.Height)
-
 	if err != nil {
 		return fmt.Errorf("error while storing proposal staking pool snapshot for proposal %d: %s",
 			snapshot.ProposalID, err)
@@ -391,7 +390,6 @@ WHERE proposal_validator_status_snapshot.height <= excluded.height`
 
 // SaveSoftwareUpgradePlan allows to save the given software upgrade plan with its proposal id
 func (db *Db) SaveSoftwareUpgradePlan(proposalID uint64, plan upgradetypes.Plan, height int64) error {
-
 	stmt := `
 INSERT INTO software_upgrade_plan(proposal_id, plan_name, upgrade_height, info, height)
 VALUES ($1, $2, $3, $4, $5)

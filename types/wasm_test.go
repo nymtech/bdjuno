@@ -1,8 +1,9 @@
 package types
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 func TestWasmTestSuite(t *testing.T) {
