@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/x/evidence"
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 	"cosmossdk.io/x/upgrade"
+	wasm "github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
@@ -35,6 +36,7 @@ var (
 	once sync.Once
 	cdc  *codec.ProtoCodec
 )
+
 
 func GetCodec() codec.Codec {
 	once.Do(func() {
@@ -72,6 +74,7 @@ func getBasicManagers() module.BasicManager {
 		groupmodule.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		wasm.AppModuleBasic{},
 	)
 }
 

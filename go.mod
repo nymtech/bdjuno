@@ -1,8 +1,6 @@
 module github.com/forbole/callisto/v4
 
-go 1.23.1
-
-toolchain go1.24.0
+go 1.23.5
 
 require (
 	cosmossdk.io/log v1.5.0

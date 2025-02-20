@@ -9,8 +9,8 @@ import (
 
 // HandleMsg represents a message handler that stores the given message inside the proper database table
 func (m *Module) HandleMsg(
-	index int, msg types.Message, tx *types.Transaction,
-) error {
+
+	index int, msg types.Message, tx *types.Transaction) error {
 	// Save message type
 	err := m.db.SaveMessageType(msgtypes.NewMessageType(
 		msg.GetType(),

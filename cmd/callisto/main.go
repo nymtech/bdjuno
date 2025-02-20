@@ -11,6 +11,9 @@ import (
 
 	migratecmd "github.com/forbole/callisto/v4/cmd/migrate"
 	parsecmd "github.com/forbole/callisto/v4/cmd/parse"
+  	"github.com/forbole/callisto/v4/utils"
+
+	"github.com/forbole/callisto/v4/types/config"
 	"github.com/forbole/callisto/v4/database"
 	"github.com/forbole/callisto/v4/modules"
 	"github.com/forbole/callisto/v4/types/config"

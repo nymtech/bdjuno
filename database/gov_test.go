@@ -191,6 +191,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveProposals() {
 			time.Date(2020, 1, 1, 0o1, 0o0, 0o0, 0o00, time.UTC),
 			testutils.NewTimePointer(time.Date(2020, 1, 1, 0o2, 0o0, 0o0, 0o00, time.UTC)),
 			testutils.NewTimePointer(time.Date(2020, 1, 1, 0o3, 0o0, 0o0, 0o00, time.UTC)),
+
 			proposer1.String(),
 			govtypesv1.StatusDepositPeriod.String(),
 		),

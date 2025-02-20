@@ -8,7 +8,10 @@ import (
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/forbole/callisto/v4/utils/simapp"
 	"github.com/forbole/juno/v6/node/remote"
+
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -81,6 +84,7 @@ func buildLocalSources(cfg *local.Details, cdc codec.Codec) (*Sources, error) {
 
 	var emptyWasmOpts []wasmkeeper.Option
 	wasmApp := wasmapp.NewWasmApp(sdklog.NewLogger(os.Stdout), source.StoreDB, nil, true, nil, emptyWasmOpts, nil)
+
 
 	sources := &Sources{
 		BankSource:     localbanksource.NewSource(source, banktypes.QueryServer(app.BankKeeper)),

@@ -4,9 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	dbtypes "github.com/forbole/callisto/v4/database/types"
-
 	bddbtypes "github.com/forbole/callisto/v4/database/types"
+	dbtypes "github.com/forbole/callisto/v4/database/types"
 )
 
 func (suite *DbTestSuite) TestBigDipperDb_SaveSupply() {
@@ -19,7 +18,7 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveSupply() {
 	suite.Require().NoError(err)
 
 	// Verify the data
-	expected := bddbtypes.NewSupplyRow(dbtypes.NewDbCoins(original), 10)
+	expected := bddbtypes.NewSupplyRow(bddbtypes.NewDbCoins(original), 10)
 
 	var rows []bddbtypes.SupplyRow
 	err = suite.database.Sqlx.Select(&rows, `SELECT * FROM supply`)

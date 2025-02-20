@@ -29,6 +29,7 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -42,6 +43,7 @@ var ModuleBasics = []module.AppModuleBasic{
 	gov.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 }
+
 
 var maccPerms = map[string][]string{
 	authtypes.FeeCollectorName:     nil,

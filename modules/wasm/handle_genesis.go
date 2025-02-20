@@ -65,7 +65,7 @@ func (m *Module) SaveGenesisCodes(codes []wasmtypes.Code, initHeight int64) erro
 	for _, code := range codes {
 		if code.CodeID != 0 {
 			wasmCodes = append(wasmCodes, types.NewWasmCode(
-				"", code.CodeBytes, &code.CodeInfo.InstantiateConfig, code.CodeID, initHeight,
+				"", code.CodeBytes, &code.CodeInfo.InstantiateConfig, code.CodeID, initHeight, // #nosec G601
 			))
 		}
 	}
