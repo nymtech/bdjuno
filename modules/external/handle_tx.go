@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"net/http"
 
-	juno "github.com/forbole/juno/v5/types"
+	juno "github.com/forbole/juno/v6/types"
 	"github.com/rs/zerolog/log"
 )
 
 // HandleTx implements modules.TransactionModule
-func (m *Module) HandleTx(tx *juno.Tx) error {
+func (m *Module) HandleTx(tx *juno.Transaction) error {
 	log.Info().Str("txhash", tx.TxHash).Msg("✅✅✅✅ external HandleTx")
 
-	txResponseJSON, err := m.cdc.MarshalJSON(tx.TxResponse)
+	txResponseJSON, err := m.cdc.MarshalJSON(tx.Tx)
 	if err != nil {
 		log.Err(err).Msg("Could no encode transaction response as json")
 	}
