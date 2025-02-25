@@ -35,6 +35,7 @@ import (
 	"github.com/forbole/callisto/v4/modules/modules"
 	"github.com/forbole/callisto/v4/modules/pricefeed"
 	"github.com/forbole/callisto/v4/modules/staking"
+	"github.com/forbole/callisto/v4/modules/tx_worker"
 	"github.com/forbole/callisto/v4/modules/upgrade"
 )
 
@@ -91,10 +92,12 @@ func (r *Registrar) BuildModules(ctx registrar.Context) jmodules.Modules {
 	govModule := gov.NewModule(sources.GovSource, distrModule, mintModule, slashingModule, stakingModule, r.cdc, db)
 	wasmModule := wasm.NewModule(sources.WasmSource, r.cdc, db)
 	upgradeModule := upgrade.NewModule(db, stakingModule)
+	txWorkerModule := tx_worker.NewModule(db)
 
 	externalModule := external.NewModule(ctx.JunoConfig, r.cdc, r.cdc.InterfaceRegistry())
 
 	return []jmodules.Module{
+		txWorkerModule,
 		messages.NewModule(r.parser, ctx.Database),
 		telemetry.NewModule(ctx.JunoConfig),
 		pruning.NewModule(ctx.JunoConfig, db, ctx.Logger),
