@@ -30,7 +30,9 @@ select_permissions:
         - sender
         - contract_address
         - raw_contract_message
+        - message_type
         - funds
+        - hash
         - data
         - executed_at
         - height
