@@ -21,7 +21,6 @@ type Module struct {
 
 // NewModule returns a new Module instance
 func NewModule(db *database.Db) *Module {
-	log.Info().Msg("TX_WORKER: Initializing transaction log enrichment module")
 	return &Module{
 		db: db,
 	}
@@ -35,26 +34,13 @@ func (m *Module) Name() string {
 // HandleTx implements modules.TransactionModule
 // This is called before any other module receives the transaction
 func (m *Module) HandleTx(tx *juno.Transaction) error {
-	log.Info().
-		Str("txhash", tx.TxHash).
-		Uint64("height", tx.Height).
-		Int("events_count", len(tx.Events)).
-		Int("logs_count", len(tx.Logs)).
-		Msg("TX_WORKER: Processing transaction")
-
-	// Log transaction state before processing
+	// Skip if logs are already present
 	if len(tx.Logs) > 0 {
-		log.Debug().
-			Str("txhash", tx.TxHash).
-			Int("logs_count", len(tx.Logs)).
-			Msg("TX_WORKER: Transaction already has logs, skipping")
 		return nil
 	}
 
+	// Skip if no events are present
 	if len(tx.Events) == 0 {
-		log.Debug().
-			Str("txhash", tx.TxHash).
-			Msg("TX_WORKER: Transaction has no events, skipping")
 		return nil
 	}
 
@@ -66,10 +52,6 @@ func (m *Module) HandleTx(tx *juno.Transaction) error {
 			Str("txhash", tx.TxHash).
 			Int("new_logs_count", len(tx.Logs)).
 			Msg("TX_WORKER: Successfully enriched transaction logs")
-	} else {
-		log.Debug().
-			Str("txhash", tx.TxHash).
-			Msg("TX_WORKER: Transaction logs not updated")
 	}
 
 	return nil
