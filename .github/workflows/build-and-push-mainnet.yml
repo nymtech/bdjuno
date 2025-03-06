@@ -23,5 +23,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
+          context: .
+          file: ./Dockerfile.cosmwasm
           push: true
           tags: nymtech/callisto:chains_nyx_mainnet-

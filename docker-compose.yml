@@ -18,7 +18,7 @@ services:
   callisto:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cosmwasm
     restart: always
     command: callisto parse --home /callisto/.callisto
     volumes:
