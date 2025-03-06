@@ -6,14 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/codec"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/lib/pq"
 
-	dbtypes "github.com/forbole/bdjuno/v4/database/types"
-	"github.com/forbole/bdjuno/v4/types"
+	dbtypes "github.com/forbole/callisto/v4/database/types"
+	"github.com/forbole/callisto/v4/types"
 )
 
 // SaveGovParams saves the given x/gov parameters inside the database
@@ -88,9 +87,8 @@ INSERT INTO proposal(
 			vi+1, vi+2, vi+3, vi+4, vi+5, vi+6, vi+7, vi+8, vi+9, vi+10, vi+11)
 
 		var jsonMessages []string
-		var protoCodec codec.ProtoCodec
 		for _, msg := range proposal.Messages {
-			contentBz, err := protoCodec.MarshalJSON(msg)
+			contentBz, err := db.cdc.MarshalJSON(msg)
 			if err != nil {
 				return fmt.Errorf("error while marshalling proposal msg: %s", err)
 			}
@@ -160,7 +158,7 @@ func (db *Db) GetProposal(id uint64) (types.Proposal, error) {
 	var messages []*codectypes.Any
 	for _, jsonMessage := range jsonMessages {
 		var msg codectypes.Any
-		err = db.Cdc.UnmarshalJSON([]byte(jsonMessage), &msg)
+		err = db.cdc.UnmarshalJSON([]byte(jsonMessage), &msg)
 		if err != nil {
 			return types.Proposal{}, err
 		}
@@ -346,7 +344,6 @@ WHERE proposal_staking_pool_snapshot.height <= excluded.height`
 	_, err := db.SQL.Exec(stmt,
 		snapshot.ProposalID, snapshot.Pool.BondedTokens.String(),
 		snapshot.Pool.NotBondedTokens.String(), snapshot.Pool.Height)
-
 	if err != nil {
 		return fmt.Errorf("error while storing proposal staking pool snapshot for proposal %d: %s",
 			snapshot.ProposalID, err)
@@ -393,7 +390,6 @@ WHERE proposal_validator_status_snapshot.height <= excluded.height`
 
 // SaveSoftwareUpgradePlan allows to save the given software upgrade plan with its proposal id
 func (db *Db) SaveSoftwareUpgradePlan(proposalID uint64, plan upgradetypes.Plan, height int64) error {
-
 	stmt := `
 INSERT INTO software_upgrade_plan(proposal_id, plan_name, upgrade_height, info, height)
 VALUES ($1, $2, $3, $4, $5)

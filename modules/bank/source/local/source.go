@@ -7,15 +7,13 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/forbole/juno/v5/node/local"
+	"github.com/forbole/juno/v6/node/local"
 
-	"github.com/forbole/bdjuno/v4/modules/bank/source"
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/modules/bank/source"
+	"github.com/forbole/callisto/v4/types"
 )
 
-var (
-	_ source.Source = &Source{}
-)
+var _ source.Source = &Source{}
 
 // Source represents the implementation of the bank keeper that works on a local node
 type Source struct {
@@ -60,7 +58,7 @@ func (s Source) GetSupply(height int64) (sdk.Coins, error) {
 
 	var coins []sdk.Coin
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.q.TotalSupply(
 			sdk.WrapSDKContext(ctx),

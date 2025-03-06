@@ -3,15 +3,16 @@ package feegrant
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/forbole/bdjuno/v4/database"
+	"github.com/forbole/callisto/v4/database"
 
-	"github.com/forbole/juno/v5/modules"
+	"github.com/forbole/juno/v6/modules"
 )
 
 var (
-	_ modules.BlockModule   = &Module{}
-	_ modules.Module        = &Module{}
-	_ modules.MessageModule = &Module{}
+	_ modules.BlockModule        = &Module{}
+	_ modules.Module             = &Module{}
+	_ modules.MessageModule      = &Module{}
+	_ modules.AuthzMessageModule = &Module{}
 )
 
 // Module represent x/feegrant module

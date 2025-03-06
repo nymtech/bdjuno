@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	dbtypes "github.com/forbole/bdjuno/v4/database/types"
+	dbtypes "github.com/forbole/callisto/v4/database/types"
 )
 
 // GetMessages returns all messages between block heights
@@ -31,7 +31,6 @@ func (db *Db) GetMessages(address string, startHeight int64, endHeight int64, of
 
 // GetMessagesCount returns count of GetMessages
 func (db *Db) GetMessagesCount(address string, startHeight int64, endHeight int64) (int, error) {
-
 	stmt, err := db.Sqlx.Prepare(fmt.Sprintf(`SELECT count(height)
     FROM message 
          WHERE involved_accounts_addresses @> '{%s}' AND height >= %d AND height <= %d`, address, startHeight, endHeight))
@@ -41,7 +40,6 @@ func (db *Db) GetMessagesCount(address string, startHeight int64, endHeight int6
 
 	var count int
 	err = stmt.QueryRow().Scan(&count)
-
 	if err != nil {
 		return 0, err
 	}

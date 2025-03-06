@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	dbtypes "github.com/forbole/bdjuno/v4/database/types"
-	"github.com/forbole/bdjuno/v4/modules/actions/types"
+	dbtypes "github.com/forbole/callisto/v4/database/types"
+	"github.com/forbole/callisto/v4/modules/actions/types"
 	"github.com/rs/zerolog/log"
 )
 
@@ -29,13 +29,13 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 		Str("location", "before").
 		Msg(message)
 
-	limit := uint64(10)
+	var limit uint64
 	offset := uint64(0)
 
 	executedAtStart := payload.Input.ExecutedAtStart
 	executedAtEnd := payload.Input.ExecutedAtEnd
 
-	startHeight := int64(-1)
+	var startHeight int64
 	endHeight := int64(-1)
 
 	valueStart, err := ctx.Db.GetBlockHeightTime(executedAtStart)
@@ -43,9 +43,9 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 		valueFirst, err := ctx.Db.GetFirstBlockTime()
 		if err != nil {
 			return nil, err
-		} else {
-			startHeight = valueFirst.Height
 		}
+
+		startHeight = valueFirst.Height
 	} else {
 		startHeight = valueStart.Height
 	}
@@ -55,9 +55,8 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 		valueLast, err := ctx.Db.GetLastBlockTime()
 		if err != nil {
 			return nil, err
-		} else {
-			startHeight = valueLast.Height
 		}
+		startHeight = valueLast.Height
 	} else {
 		endHeight = valueEnd.Height
 	}
@@ -95,7 +94,6 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 }
 
 func MessagesHandler(ctx *types.Context, payload *types.Payload) (interface{}, error) {
-
 	params, err := ValidateMessageParams(ctx, payload, "message handler")
 	if err != nil {
 		return nil, err

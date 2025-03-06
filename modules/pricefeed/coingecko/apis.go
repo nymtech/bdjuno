@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/types"
 )
 
 // GetCoinsList allows to fetch from the remote APIs the list of all the supported tokens
@@ -58,7 +58,7 @@ func queryCoinGecko(endpoint string, ptr interface{}) error {
 
 	err = json.Unmarshal(bz, &ptr)
 	if err != nil {
-		return fmt.Errorf("error while unmarshaling response body: %s", err)
+		return fmt.Errorf("error while unmarshalling response body: %s", err)
 	}
 
 	return nil

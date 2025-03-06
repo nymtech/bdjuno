@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/rs/zerolog/log"
@@ -61,11 +61,11 @@ func (m *Module) SaveGenesisCodes(codes []wasmtypes.Code, initHeight int64) erro
 	log.Debug().Str("module", "wasm").Str("operation", "genesis codes").
 		Int("code counts", len(codes)).Msg("parsing genesis")
 
-	var wasmCodes = []types.WasmCode{}
+	wasmCodes := []types.WasmCode{}
 	for _, code := range codes {
 		if code.CodeID != 0 {
 			wasmCodes = append(wasmCodes, types.NewWasmCode(
-				"", code.CodeBytes, &code.CodeInfo.InstantiateConfig, code.CodeID, initHeight,
+				"", code.CodeBytes, &code.CodeInfo.InstantiateConfig, code.CodeID, initHeight, // #nosec G601
 			))
 		}
 	}

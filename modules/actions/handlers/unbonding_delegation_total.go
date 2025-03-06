@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/forbole/bdjuno/v4/modules/actions/types"
+	"github.com/forbole/callisto/v4/modules/actions/types"
 
 	"github.com/rs/zerolog/log"
 )
@@ -32,7 +32,7 @@ func UnbondingDelegationsTotal(ctx *types.Context, payload *types.Payload) (inte
 	}
 
 	// Add up total value of unbonding delegations
-	var totalAmount = big.NewInt(0)
+	totalAmount := big.NewInt(0)
 	for _, eachUnbondingDelegation := range unbondingDelegations.UnbondingResponses {
 		for _, entry := range eachUnbondingDelegation.Entries {
 			totalAmount = totalAmount.Add(totalAmount, entry.Balance.BigInt())

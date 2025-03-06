@@ -7,26 +7,18 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
-    - dogsled
     - gocritic
     - gofmt
     - goimports
-    - golint
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - maligned
     - misspell
     - nakedret
-    - scopelint
     - staticcheck
-    - structcheck
     - stylecheck
-    - typecheck
     - unconvert
-    - unused
     - unparam
     - misspell
     - nolintlint
@@ -54,17 +46,17 @@ issues:
     - text: "SA1019:"
       linters:
         - staticcheck
+    # Disable integer overflow warnings since we know these conversions are safe in our context
+    - text: "G115:"
+      linters:
+        - gosec
   max-issues-per-linter: 10000
   max-same-issues: 10000
 
 linters-settings:
   dogsled:
     max-blank-identifiers: 3
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
   nolintlint:
     allow-unused: false
-    allow-leading-space: true
     require-explanation: false
     require-specific: false

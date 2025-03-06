@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	dbtypes "github.com/forbole/bdjuno/v4/database/types"
+	dbtypes "github.com/forbole/callisto/v4/database/types"
 )
 
 func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
@@ -30,7 +30,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator1.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			10,
 			10,
@@ -39,7 +39,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator2.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			10,
 			10,
@@ -54,7 +54,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator1.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			10,
 			10,
@@ -63,7 +63,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator2.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			10,
 			10,
@@ -86,7 +86,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator1.GetConsAddr(),
 			100,
 			10000,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			70,
 			9,
@@ -95,7 +95,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator2.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			false,
 			11,
 			11,
@@ -110,7 +110,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator1.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			true,
 			10,
 			10,
@@ -119,7 +119,7 @@ func (suite *DbTestSuite) TestBigDipperDb_ValidatorSigningInfo() {
 			validator2.GetConsAddr(),
 			10,
 			10,
-			time.Date(2020, 10, 10, 15, 00, 00, 000, time.UTC),
+			time.Date(2020, 10, 10, 15, 0o0, 0o0, 0o00, time.UTC),
 			false,
 			11,
 			11,
@@ -139,10 +139,10 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveSlashingParams() {
 	// Save data
 	slashingParams := slashingtypes.Params{
 		SignedBlocksWindow:      10,
-		MinSignedPerWindow:      sdk.NewDecWithPrec(100, 2),
+		MinSignedPerWindow:      math.LegacyNewDecWithPrec(100, 2),
 		DowntimeJailDuration:    10000,
-		SlashFractionDoubleSign: sdk.NewDecWithPrec(100, 2),
-		SlashFractionDowntime:   sdk.NewDecWithPrec(100, 4),
+		SlashFractionDoubleSign: math.LegacyNewDecWithPrec(100, 2),
+		SlashFractionDowntime:   math.LegacyNewDecWithPrec(100, 4),
 	}
 	params := types.NewSlashingParams(slashingParams, 10)
 	err := suite.database.SaveSlashingParams(params)
@@ -163,10 +163,10 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveSlashingParams() {
 	err = suite.database.SaveSlashingParams(types.NewSlashingParams(
 		slashingtypes.Params{
 			SignedBlocksWindow:      5,
-			MinSignedPerWindow:      sdk.NewDecWithPrec(50, 2),
+			MinSignedPerWindow:      math.LegacyNewDecWithPrec(50, 2),
 			DowntimeJailDuration:    10000,
-			SlashFractionDoubleSign: sdk.NewDecWithPrec(50, 2),
-			SlashFractionDowntime:   sdk.NewDecWithPrec(50, 4),
+			SlashFractionDoubleSign: math.LegacyNewDecWithPrec(50, 2),
+			SlashFractionDowntime:   math.LegacyNewDecWithPrec(50, 4),
 		},
 		9,
 	))
@@ -184,10 +184,10 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveSlashingParams() {
 	// Try updating with same height
 	slashingParams = slashingtypes.Params{
 		SignedBlocksWindow:      5,
-		MinSignedPerWindow:      sdk.NewDecWithPrec(50, 2),
+		MinSignedPerWindow:      math.LegacyNewDecWithPrec(50, 2),
 		DowntimeJailDuration:    10000,
-		SlashFractionDoubleSign: sdk.NewDecWithPrec(50, 2),
-		SlashFractionDowntime:   sdk.NewDecWithPrec(50, 4),
+		SlashFractionDoubleSign: math.LegacyNewDecWithPrec(50, 2),
+		SlashFractionDowntime:   math.LegacyNewDecWithPrec(50, 4),
 	}
 	err = suite.database.SaveSlashingParams(types.NewSlashingParams(slashingParams, 10))
 	suite.Require().NoError(err)
@@ -204,10 +204,10 @@ func (suite *DbTestSuite) TestBigDipperDb_SaveSlashingParams() {
 	// Try updating with higher height
 	slashingParams = slashingtypes.Params{
 		SignedBlocksWindow:      6,
-		MinSignedPerWindow:      sdk.NewDecWithPrec(60, 2),
+		MinSignedPerWindow:      math.LegacyNewDecWithPrec(60, 2),
 		DowntimeJailDuration:    10000,
-		SlashFractionDoubleSign: sdk.NewDecWithPrec(60, 2),
-		SlashFractionDowntime:   sdk.NewDecWithPrec(60, 4),
+		SlashFractionDoubleSign: math.LegacyNewDecWithPrec(60, 2),
+		SlashFractionDowntime:   math.LegacyNewDecWithPrec(60, 4),
 	}
 	err = suite.database.SaveSlashingParams(types.NewSlashingParams(slashingParams, 11))
 	suite.Require().NoError(err)

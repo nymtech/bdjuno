@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -77,7 +78,7 @@ func (coin *DbCoin) Scan(src interface{}) error {
 
 // ToCoin converts this DbCoin to sdk.Coin
 func (coin DbCoin) ToCoin() sdk.Coin {
-	amount, _ := sdk.NewIntFromString(coin.Amount)
+	amount, _ := math.NewIntFromString(coin.Amount)
 	return sdk.NewCoin(coin.Denom, amount)
 }
 
@@ -140,7 +141,7 @@ func (coins *DbCoins) Scan(src interface{}) error {
 
 // ToCoins converts this DbCoins to sdk.Coins
 func (coins DbCoins) ToCoins() sdk.Coins {
-	var sdkCoins = make([]sdk.Coin, len(coins))
+	sdkCoins := make([]sdk.Coin, len(coins))
 	for index := range coins {
 		sdkCoins[index] = coins[index].ToCoin()
 	}
@@ -189,7 +190,7 @@ func (coin *DbDecCoin) Scan(src interface{}) error {
 
 // ToDecCoin converts this DbDecCoin to sdk.DecCoin
 func (coin DbDecCoin) ToDecCoin() sdk.DecCoin {
-	amount, _ := sdk.NewDecFromStr(coin.Amount)
+	amount, _ := math.LegacyNewDecFromStr(coin.Amount)
 	return sdk.NewDecCoinFromDec(coin.Denom, amount)
 }
 
@@ -252,7 +253,7 @@ func (coins *DbDecCoins) Scan(src interface{}) error {
 
 // ToDecCoins converts this DbDecCoins to sdk.DecCoins
 func (coins DbDecCoins) ToDecCoins() sdk.DecCoins {
-	var sdkCoins = make([]sdk.DecCoin, len(coins))
+	sdkCoins := make([]sdk.DecCoin, len(coins))
 	for index := range coins {
 		sdkCoins[index] = coins[index].ToDecCoin()
 	}

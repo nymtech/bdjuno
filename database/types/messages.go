@@ -41,7 +41,7 @@ func NewMessageWithValueRow(row MessageRow) (*MessageWithValueRow, error) {
 		funds = value["amount"]
 	}
 
-	var rowWithValue = MessageWithValueRow{
+	rowWithValue := MessageWithValueRow{
 		TxHash:  row.TxHash,
 		Index:   row.Index,
 		Type:    row.Type,

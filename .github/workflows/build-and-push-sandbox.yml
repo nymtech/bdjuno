@@ -1,7 +1,9 @@
-name: Build and Push to DockerHub
+name: Build and Push to DockerHub - Sandbox
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - sandbox
 
 jobs:
   docker:
@@ -24,4 +26,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: nymtech/bdjuno:chains_nyx_mainnet-
+          tags: nymtech/callisto:chains_nyx_sandbox

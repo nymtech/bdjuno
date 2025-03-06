@@ -1,7 +1,7 @@
 package database_test
 
 import (
-	"github.com/forbole/bdjuno/v4/database/types"
+	"github.com/forbole/callisto/v4/database/types"
 )
 
 func (suite *DbTestSuite) TestBigDipperDb_InsertEnableModules() {
@@ -15,5 +15,4 @@ func (suite *DbTestSuite) TestBigDipperDb_InsertEnableModules() {
 
 	expected := types.NewModuleRows(modules)
 	suite.Require().True(results.Equal(&expected))
-
 }

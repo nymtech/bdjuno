@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/forbole/juno/v5/modules"
-	"github.com/forbole/juno/v5/types/config"
+	"github.com/forbole/juno/v6/modules"
+	"github.com/forbole/juno/v6/types/config"
 	"github.com/invopop/jsonschema"
 	"github.com/rs/zerolog/log"
 )
@@ -52,7 +52,7 @@ func NewModule(cfg config.Config, cdc codec.Codec, registry codectypes.Interface
 	schema := jsonschema.Reflect(&sdk.TxResponse{})
 	// schema := jsonschema.ReflectFromType(sdk.TxResponse)
 	json, _ := schema.MarshalJSON()
-	os.WriteFile("schema.json", json, 0600)
+	os.WriteFile("schema.json", json, 0o600)
 	log.Info().Msg("Wrote `schema.json` with Cosmos transaction types")
 
 	return &Module{

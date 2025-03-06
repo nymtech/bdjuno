@@ -7,10 +7,10 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/rs/zerolog/log"
 
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/types"
 
-	"github.com/forbole/bdjuno/v4/modules/pricefeed/coingecko"
-	"github.com/forbole/bdjuno/v4/modules/utils"
+	"github.com/forbole/callisto/v4/modules/pricefeed/coingecko"
+	"github.com/forbole/callisto/v4/modules/utils"
 )
 
 // RegisterPeriodicOperations implements modules.PeriodicOperationsModule
@@ -75,7 +75,6 @@ func (m *Module) UpdatePrice() error {
 	}
 
 	return nil
-
 }
 
 // UpdatePricesHistory fetches total amount of coins in the system from RPC

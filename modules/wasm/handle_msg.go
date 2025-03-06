@@ -9,53 +9,57 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/forbole/callisto/v4/utils"
+	eventutils "github.com/forbole/callisto/v4/utils/events"
 	"github.com/ohler55/ojg/oj"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/forbole/bdjuno/v4/types"
-	juno "github.com/forbole/juno/v5/types"
+	"github.com/forbole/callisto/v4/types"
+	juno "github.com/forbole/juno/v6/types"
 )
 
-// HandleMsg implements modules.MessageModule
-func (m *Module) HandleMsg(index int, msg sdk.Msg, tx *juno.Tx) error {
-	log.Trace().Str("txhash", tx.TxHash).Msg("wasm HandleMsg")
+var msgFilter = map[string]bool{
+	"/cosmwasm.wasm.v1.MsgStoreCode":           true,
+	"/cosmwasm.wasm.v1.MsgInstantiateContract": true,
+	"/cosmwasm.wasm.v1.MsgExecuteContract":     true,
+	"/cosmwasm.wasm.v1.MsgMigrateContract":     true,
+	"/cosmwasm.wasm.v1.MsgUpdateAdmin":         true,
+	"/cosmwasm.wasm.v1.MsgClearAdmin":          true,
+}
 
-	if len(tx.Logs) == 0 {
+// HandleMsg implements modules.MessageModule
+func (m *Module) HandleMsg(index int, msg juno.Message, tx *juno.Transaction) error {
+	if _, ok := msgFilter[msg.GetType()]; !ok {
 		return nil
 	}
 
-	switch cosmosMsg := msg.(type) {
-	case *wasmtypes.MsgStoreCode:
-		err := m.HandleMsgStoreCode(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgStoreCode: %s", err)
-		}
-	case *wasmtypes.MsgInstantiateContract:
-		err := m.HandleMsgInstantiateContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgInstantiateContract: %s", err)
-		}
-	case *wasmtypes.MsgExecuteContract:
-		err := m.HandleMsgExecuteContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgExecuteContract: %s", err)
-		}
-	case *wasmtypes.MsgMigrateContract:
-		err := m.HandleMsgMigrateContract(index, tx, cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgMigrateContract: %s", err)
-		}
-	case *wasmtypes.MsgUpdateAdmin:
-		err := m.HandleMsgUpdateAdmin(cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgUpdateAdmin: %s", err)
-		}
-	case *wasmtypes.MsgClearAdmin:
-		err := m.HandleMsgClearAdmin(cosmosMsg)
-		if err != nil {
-			return fmt.Errorf("error while handling MsgClearAdmin: %s", err)
-		}
+	log.Debug().Str("module", "wasm").Str("hash", tx.TxHash).Uint64("height", tx.Height).Msg(fmt.Sprintf("handling wasm message %s", msg.GetType()))
+
+	switch msg.GetType() {
+	case "/cosmwasm.wasm.v1.MsgStoreCode":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgStoreCode{})
+		return m.HandleMsgStoreCode(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgInstantiateContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgInstantiateContract{})
+		return m.HandleMsgInstantiateContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgExecuteContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgExecuteContract{})
+		return m.HandleMsgExecuteContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgMigrateContract":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgMigrateContract{})
+		return m.HandleMsgMigrateContract(index, tx, cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgUpdateAdmin":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgUpdateAdmin{})
+		return m.HandleMsgUpdateAdmin(cosmosMsg)
+
+	case "/cosmwasm.wasm.v1.MsgClearAdmin":
+		cosmosMsg := utils.UnpackMessage(m.cdc, msg.GetBytes(), &wasmtypes.MsgClearAdmin{})
+		return m.HandleMsgClearAdmin(cosmosMsg)
 	}
 
 	return nil
@@ -63,11 +67,12 @@ func (m *Module) HandleMsg(index int, msg sdk.Msg, tx *juno.Tx) error {
 
 // HandleMsgStoreCode allows to properly handle a MsgStoreCode
 // The Store Code Event is to upload the contract code on the chain, where a Code ID is returned
-func (m *Module) HandleMsgStoreCode(index int, tx *juno.Tx, msg *wasmtypes.MsgStoreCode) error {
+func (m *Module) HandleMsgStoreCode(index int, tx *juno.Transaction, msg *wasmtypes.MsgStoreCode) error {
 	// Get store code event
-	event, err := tx.FindEventByType(index, wasmtypes.EventTypeStoreCode)
-	if err != nil {
-		return fmt.Errorf("error while searching for EventTypeInstantiate: %s", err)
+	event, success := eventutils.FindEventByType(sdk.StringifyEvents(tx.Events), wasmtypes.EventTypeStoreCode)
+
+	if !success {
+		return fmt.Errorf("error while searching for EventTypeStorecode in %s", tx.TxHash)
 	}
 
 	// Get code ID from store code event
@@ -83,18 +88,19 @@ func (m *Module) HandleMsgStoreCode(index int, tx *juno.Tx, msg *wasmtypes.MsgSt
 
 	return m.db.SaveWasmCode(
 		types.NewWasmCode(
-			msg.Sender, msg.WASMByteCode, msg.InstantiatePermission, codeID, tx.Height,
+			msg.Sender, msg.WASMByteCode, msg.InstantiatePermission, codeID, int64(tx.Height),
 		),
 	)
 }
 
 // HandleMsgInstantiateContract allows to properly handle a MsgInstantiateContract
 // Instantiate Contract Event instantiates an executable contract with the code previously stored with Store Code Event
-func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Tx, msg *wasmtypes.MsgInstantiateContract) error {
+func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Transaction, msg *wasmtypes.MsgInstantiateContract) error {
 	// Get instantiate contract event
-	event, err := tx.FindEventByType(index, wasmtypes.EventTypeInstantiate)
-	if err != nil {
-		return fmt.Errorf("error while searching for EventTypeInstantiate: %s", err)
+	event, success := eventutils.FindEventByType(sdk.StringifyEvents(tx.Events), wasmtypes.EventTypeInstantiate)
+
+	if !success {
+		return fmt.Errorf("error while searching for EventTypeInstantiate in %s", tx.TxHash)
 	}
 
 	// Get contract address
@@ -114,7 +120,7 @@ func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Tx, msg *wasmt
 	}
 
 	// Get the contract info
-	contractInfo, err := m.source.GetContractInfo(tx.Height, contractAddress)
+	contractInfo, err := m.source.GetContractInfo(int64(tx.Height), contractAddress)
 	if err != nil {
 		return fmt.Errorf("error while getting proposal: %s", err)
 	}
@@ -136,7 +142,7 @@ func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Tx, msg *wasmt
 	}
 
 	// Get contract states
-	contractStates, err := m.source.GetContractStates(tx.Height, contractAddress)
+	contractStates, err := m.source.GetContractStates(int64(tx.Height), contractAddress)
 	if err != nil {
 		return fmt.Errorf("error while getting genesis contract states: %s", err)
 	}
@@ -144,7 +150,7 @@ func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Tx, msg *wasmt
 	contract := types.NewWasmContract(
 		msg.Sender, msg.Admin, msg.CodeID, msg.Label, msg.Msg, msg.Funds,
 		contractAddress, string(resultDataBz), timestamp,
-		contractInfo.Creator, contractInfoExt, contractStates, tx.Height,
+		contractInfo.Creator, contractInfoExt, contractStates, int64(tx.Height),
 	)
 	return m.db.SaveWasmContracts(
 		[]types.WasmContract{contract},
@@ -153,15 +159,16 @@ func (m *Module) HandleMsgInstantiateContract(index int, tx *juno.Tx, msg *wasmt
 
 // HandleMsgExecuteContract allows to properly handle a MsgExecuteContract
 // Execute Event executes an instantiated contract
-func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes.MsgExecuteContract) error {
+func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Transaction, msg *wasmtypes.MsgExecuteContract) error {
 	log.Trace().Str("txhash", tx.TxHash).Msg("wasm HandleMsgExecuteContract")
 
-	//
-	// parse the ExecuteContract message body
-	//
+	// Parse the ExecuteContract message body
 	msgJSON, err := oj.ParseString(string(msg.Msg))
+	if err != nil {
+		return fmt.Errorf("error while parsing message JSON: %s", err)
+	}
 
-	// use reflection to get the message name by pulling the 1st field name from the JSON struct
+	// Use reflection to get the message name by pulling the 1st field name from the JSON struct
 	messageName := ""
 	v := reflect.ValueOf(msgJSON)
 	if v.Len() == 1 && len(v.MapKeys()) == 1 {
@@ -170,18 +177,22 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 		log.Warn().Str("txhash", tx.TxHash).Str("messageJson", string(msg.Msg)).Msg("Unable to parse message name from JSON")
 	}
 
-	// skip some message types:
-	// - `write_k_v` will bloat the pgsql database with contract state imports
+	// Skip some message types
 	if messageName == "write_k_v" {
 		log.Trace().Str("txhash", tx.TxHash).Str("messageName", messageName).Msg("Skipping contract message")
-		return err
+		return nil
+	}
+	log.Trace().Uint64("height", tx.Height).Int("index", index).Str("txhash", tx.TxHash).Str("messageName", messageName).Msg("Processing contract message")
+
+	// Check if events slice is not empty and index is within range
+	if index >= len(tx.Events) {
+		return fmt.Errorf("index out of range: %d, events length: %d", index, len(tx.Events))
 	}
 
-	log.Debug().Int64("height", tx.Height).Str("txhash", tx.TxHash).Str("messageName", messageName).Msg("Processing contract message")
+	event, success := eventutils.FindEventByType(sdk.StringifyEvents(tx.Events), wasmtypes.EventTypeExecute)
+	log.Debug().Int64("height", int64(tx.Height)).Str("txhash", tx.TxHash).Str("messageName", messageName).Msg("Processing contract message")
 
-	// Get Execute Contract event
-	event, err := tx.FindEventByType(index, wasmtypes.EventTypeExecute)
-	if err != nil {
+	if !success {
 		return fmt.Errorf("error while searching for EventTypeExecute: %s", err)
 	}
 
@@ -212,9 +223,9 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 		contractInfoLabel := ""
 
 		// Check if there is a record of the contract, otherwise look it up
-		contractInfo, err := m.source.GetContractInfo(tx.Height, contractAddress)
+		contractInfo, err := m.source.GetContractInfo(int64(tx.Height), contractAddress)
 		if err != nil {
-			log.Trace().Str("contractAddress", contractAddress).Int64("height", tx.Height).Msg("Unable to get contract info, using default values...")
+			log.Trace().Str("contractAddress", contractAddress).Int64("height", int64(tx.Height)).Msg("Unable to get contract info, using default values...")
 		} else {
 			contractInfoCreator = contractInfo.Creator
 			contractInfoAdmin = contractInfo.Admin
@@ -257,12 +268,14 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 		//}
 
 		err = m.db.SaveAccounts([]types.Account{
-			types.NewAccount(msg.Sender)})
+			types.NewAccount(msg.Sender),
+		})
 		if err != nil {
 			log.Debug().Msg(fmt.Errorf("error while saving Sender account %s: %s", msg.Sender, err).Error())
 		}
 		err = m.db.SaveAccounts([]types.Account{
-			types.NewAccount(contractInfoAdmin)})
+			types.NewAccount(contractInfoAdmin),
+		})
 		if err != nil {
 			log.Debug().Msg(fmt.Errorf("error while saving Admin account %s: %s", contractInfo.Admin, err).Error())
 		}
@@ -288,7 +301,7 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 
 	execute := types.NewWasmExecuteContract(
 		msg.Sender, msg.Contract, msg.Msg, msg.Funds,
-		string(resultDataBz), timestamp, tx.Height, tx.TxHash,
+		string(resultDataBz), timestamp, int64(tx.Height), tx.TxHash,
 	)
 
 	// save a record of the raw contract execution details
@@ -303,16 +316,17 @@ func (m *Module) HandleMsgExecuteContract(index int, tx *juno.Tx, msg *wasmtypes
 		log.Err(err).Msg("Could not save events for WasmExecuteContract")
 	}
 
-	return err
+	return nil
 }
 
 // HandleMsgMigrateContract allows to properly handle a MsgMigrateContract
 // Migrate Contract Event upgrade the contract by updating code ID generated from new Store Code Event
-func (m *Module) HandleMsgMigrateContract(index int, tx *juno.Tx, msg *wasmtypes.MsgMigrateContract) error {
+func (m *Module) HandleMsgMigrateContract(index int, tx *juno.Transaction, msg *wasmtypes.MsgMigrateContract) error {
 	// Get Migrate Contract event
-	event, err := tx.FindEventByType(index, wasmtypes.EventTypeMigrate)
-	if err != nil {
-		return fmt.Errorf("error while searching for EventTypeMigrate: %s", err)
+	event, success := eventutils.FindEventByType(sdk.StringifyEvents(tx.Events), wasmtypes.EventTypeMigrate)
+
+	if !success {
+		return fmt.Errorf("error while searching for EventTypeMigrate in %s", tx.TxHash)
 	}
 
 	// Get result data

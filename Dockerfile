@@ -1,18 +1,20 @@
-FROM golang:1.19-bullseye AS builder
-WORKDIR /go/src/github.com/forbole/bdjuno
+# Use the same architecture for the builder and the final image
+FROM golang:1.23.5-bullseye AS builder
+
+RUN apt update && apt install make git -y
+WORKDIR /callisto
+
 COPY . ./
-RUN go mod download
+RUN go mod tidy && go mod download
 RUN make build
-RUN ldd build/bdjuno > /deps.txt
-RUN echo $(ldd build/bdjuno | grep libwasmvm.so | awk '{ print $3 }')
-RUN cat /deps.txt
 
 FROM debian:bullseye
 WORKDIR /root
 RUN apt-get update && apt-get install ca-certificates -y
-COPY --from=builder /deps.txt /root/deps.txt
-COPY --from=builder /go/pkg/mod/github.com/!cosm!wasm/wasmvm@v1.4.1/internal/api/libwasmvm.x86_64.so /root
-COPY --from=builder /go/src/github.com/forbole/bdjuno/build/bdjuno /root/bdjuno
-ENV LD_LIBRARY_PATH=/root
-CMD [ "bdjuno" ]
 
+COPY --from=builder /go/pkg/mod/github.com/!cosm!wasm/wasmvm/v2@v2.2.1/internal/api/libwasmvm.* /root/
+COPY --from=builder /callisto/build/callisto /root/callisto
+
+# Set LD_LIBRARY_PATH without referencing undefined variable
+ENV LD_LIBRARY_PATH=/root
+CMD ["./callisto"]

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/forbole/bdjuno/v4/modules/actions"
+	"github.com/forbole/callisto/v4/modules/actions"
 
-	parsecmdtypes "github.com/forbole/juno/v5/cmd/parse/types"
+	parsecmdtypes "github.com/forbole/juno/v6/cmd/parse/types"
 
 	"gopkg.in/yaml.v3"
 
-	junov4 "github.com/forbole/juno/v5/cmd/migrate/v4"
-	"github.com/forbole/juno/v5/types/config"
+	junov4 "github.com/forbole/juno/v6/cmd/migrate/v4"
+	"github.com/forbole/juno/v6/types/config"
 )
 
 // RunMigration runs the migrations from v2 to v3
@@ -39,7 +39,7 @@ func RunMigration(parseConfig *parsecmdtypes.Config) error {
 		return fmt.Errorf("error while serializing config: %s", err)
 	}
 
-	err = os.WriteFile(config.GetConfigFilePath(), bz, 0600)
+	err = os.WriteFile(config.GetConfigFilePath(), bz, 0o600)
 	if err != nil {
 		return fmt.Errorf("error while writing v3 config: %s", err)
 	}

@@ -6,14 +6,12 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/forbole/juno/v5/node/local"
+	"github.com/forbole/juno/v6/node/local"
 
-	wasmsource "github.com/forbole/bdjuno/v4/modules/wasm/source"
+	wasmsource "github.com/forbole/callisto/v4/modules/wasm/source"
 )
 
-var (
-	_ wasmsource.Source = &Source{}
-)
+var _ wasmsource.Source = &Source{}
 
 // Source implements wasmsource.Source using a local node
 type Source struct {
@@ -58,7 +56,7 @@ func (s Source) GetContractStates(height int64, contractAddr string) ([]wasmtype
 
 	var models []wasmtypes.Model
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.q.AllContractState(
 			sdk.WrapSDKContext(ctx),

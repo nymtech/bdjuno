@@ -6,15 +6,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/forbole/juno/v5/node/remote"
+	"github.com/forbole/juno/v6/node/remote"
 
-	bankkeeper "github.com/forbole/bdjuno/v4/modules/bank/source"
-	"github.com/forbole/bdjuno/v4/types"
+	bankkeeper "github.com/forbole/callisto/v4/modules/bank/source"
+	"github.com/forbole/callisto/v4/types"
 )
 
-var (
-	_ bankkeeper.Source = &Source{}
-)
+var _ bankkeeper.Source = &Source{}
 
 type Source struct {
 	*remote.Source
@@ -56,7 +54,7 @@ func (s Source) GetSupply(height int64) (sdk.Coins, error) {
 
 	var coins []sdk.Coin
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.bankClient.TotalSupply(
 			ctx,

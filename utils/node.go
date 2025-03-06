@@ -4,16 +4,16 @@ import (
 	"fmt"
 
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	"github.com/forbole/juno/v5/node"
+	"github.com/forbole/juno/v6/node"
 )
 
 // QueryTxs queries all the transactions from the given node corresponding to the given query
 func QueryTxs(node node.Node, query string) ([]*coretypes.ResultTx, error) {
 	var txs []*coretypes.ResultTx
 
-	var page = 1
-	var perPage = 100
-	var stop = false
+	page := 1
+	perPage := 100
+	stop := false
 	for !stop {
 		result, err := node.TxSearch(query, &page, &perPage, "")
 		if err != nil {

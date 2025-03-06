@@ -94,7 +94,7 @@ func NewWasmContract(
 
 // ConvertContractStates removes unaccepted hex characters for postgreSQL from the state key
 func ConvertContractStates(states []wasmtypes.Model) []byte {
-	var jsonStates = make(map[string]interface{})
+	jsonStates := make(map[string]interface{})
 
 	hexZero, _ := hex.DecodeString("00")
 	for _, state := range states {

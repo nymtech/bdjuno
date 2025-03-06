@@ -6,7 +6,7 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/rs/zerolog/log"
 
-	"github.com/forbole/bdjuno/v4/modules/utils"
+	"github.com/forbole/callisto/v4/modules/utils"
 )
 
 // RegisterPeriodicOperations implements modules.PeriodicOperationsModule
@@ -42,13 +42,11 @@ func (m *Module) UpdateStakingPool() error {
 	pool, err := m.GetStakingPool(block.Height)
 	if err != nil {
 		return fmt.Errorf("error while getting staking pool: %s", err)
-
 	}
 
 	err = m.db.SaveStakingPool(pool)
 	if err != nil {
 		return fmt.Errorf("error while saving staking pool: %s", err)
-
 	}
 
 	return nil

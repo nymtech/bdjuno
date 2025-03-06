@@ -5,14 +5,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/query"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/forbole/juno/v5/node/remote"
+	"github.com/forbole/juno/v6/node/remote"
 
-	stakingsource "github.com/forbole/bdjuno/v4/modules/staking/source"
+	stakingsource "github.com/forbole/callisto/v4/modules/staking/source"
 )
 
-var (
-	_ stakingsource.Source = &Source{}
-)
+var _ stakingsource.Source = &Source{}
 
 // Source implements stakingsource.Source using a remote node
 type Source struct {
@@ -47,7 +45,7 @@ func (s Source) GetValidatorsWithStatus(height int64, status string) ([]stakingt
 
 	var validators []stakingtypes.Validator
 	var nextKey []byte
-	var stop = false
+	stop := false
 	for !stop {
 		res, err := s.stakingClient.Validators(
 			ctx,

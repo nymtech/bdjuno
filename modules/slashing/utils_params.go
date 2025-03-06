@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/forbole/bdjuno/v4/types"
+	"github.com/forbole/callisto/v4/types"
 )
 
 // UpdateParams gets the slashing params for the given height, and stores them inside the database
@@ -18,5 +18,4 @@ func (m *Module) UpdateParams(height int64) error {
 	}
 
 	return m.db.SaveSlashingParams(types.NewSlashingParams(params, height))
-
 }

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/forbole/bdjuno/v4/modules/actions/logging"
+	"github.com/forbole/callisto/v4/modules/actions/logging"
 
 	"github.com/rs/zerolog/log"
 )
@@ -102,7 +102,6 @@ func (w *ActionsWorker) Start(host string, port uint) {
 	}
 
 	err := server.ListenAndServe()
-
 	if err != nil {
 		panic(err)
 	}

@@ -3,11 +3,11 @@ package distribution
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	distrsource "github.com/forbole/bdjuno/v4/modules/distribution/source"
+	distrsource "github.com/forbole/callisto/v4/modules/distribution/source"
 
-	"github.com/forbole/juno/v5/modules"
+	"github.com/forbole/juno/v6/modules"
 
-	"github.com/forbole/bdjuno/v4/database"
+	"github.com/forbole/callisto/v4/database"
 )
 
 var (
@@ -15,6 +15,7 @@ var (
 	_ modules.GenesisModule            = &Module{}
 	_ modules.PeriodicOperationsModule = &Module{}
 	_ modules.MessageModule            = &Module{}
+	_ modules.AuthzMessageModule       = &Module{}
 )
 
 // Module represents the x/distr module
