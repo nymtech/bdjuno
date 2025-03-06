@@ -227,7 +227,6 @@ func (db *Db) SaveWasmExecuteContractEvents(executeContract types.WasmExecuteCon
 			}
 		}
 	} else {
-
 		// We fall back to events for the newer version of SDK and look for events with msg_index set
 		for _, event := range tx.Events {
 			for _, attr := range event.Attributes {

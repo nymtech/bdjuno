@@ -63,7 +63,6 @@ func (m *Module) HandleMsg(index int, msg juno.Message, tx *juno.Transaction) er
 	}
 
 	return nil
-
 }
 
 // HandleMsgStoreCode allows to properly handle a MsgStoreCode

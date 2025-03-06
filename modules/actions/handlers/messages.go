@@ -41,7 +41,6 @@ func ValidateMessageParams(ctx *types.Context, payload *types.Payload, message s
 	valueStart, err := ctx.Db.GetBlockHeightTime(executedAtStart)
 	if err != nil {
 		valueFirst, err := ctx.Db.GetFirstBlockTime()
-
 		if err != nil {
 			return nil, err
 		}
